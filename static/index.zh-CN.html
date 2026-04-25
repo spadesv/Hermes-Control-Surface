@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" href="/favicon.ico" sizes="48x48" />
+<link rel="icon" href="/favicon-32x32.png" type="image/png" sizes="32x32" />
+<link rel="icon" href="/favicon-16x16.png" type="image/png" sizes="16x16" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+<title>Hermes Dashboard</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #eff3f8;
+  --bg-2: #e7edf6;
+  --panel: rgba(255,255,255,.86);
+  --panel-strong: rgba(255,255,255,.94);
+  --panel-soft: rgba(247,249,252,.84);
+  --line: rgba(15, 23, 42, .08);
+  --line-soft: rgba(15, 23, 42, .05);
+  --text: #111827;
+  --text-2: #5f6c80;
+  --text-3: #8c98aa;
+  --blue: #1677ff;
+  --blue-2: #4a97ff;
+  --teal: #14b8a6;
+  --green: #12b76a;
+  --amber: #f59e0b;
+  --red: #ff5a52;
+  --purple: #7c6cff;
+  --shadow: 0 24px 60px rgba(41, 53, 79, .10), 0 10px 24px rgba(41, 53, 79, .04);
+  --shadow-soft: 0 12px 30px rgba(53, 71, 102, .08), inset 0 1px 0 rgba(255,255,255,.88);
+  --radius-xl: 30px;
+  --radius-lg: 24px;
+  --radius-md: 18px;
+  --radius-sm: 14px;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --logo: #0d1118;
+  --hero-title-size: clamp(2.25rem, 4vw, 3.15rem);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --bg-2: #15181d;
+  --panel: rgba(24,28,34,.90);
+  --panel-strong: rgba(29, 34, 41, .96);
+  --panel-soft: rgba(35, 41, 49, .88);
+  --line: rgba(255,255,255,.08);
+  --line-soft: rgba(255,255,255,.05);
+  --text: #f5f7fb;
+  --text-2: #bcc6d4;
+  --text-3: #8f99a8;
+  --blue: #4f96ff;
+  --blue-2: #81b6ff;
+  --teal: #38c8c1;
+  --green: #2cc37d;
+  --amber: #ffbd4d;
+  --red: #ff756f;
+  --purple: #9e8cff;
+  --shadow: 0 22px 54px rgba(0,0,0,.34), 0 10px 20px rgba(0,0,0,.14);
+  --shadow-soft: 0 12px 28px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.05);
+  --logo: #fff;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--sans);
+  color: var(--text);
+  background:
+    radial-gradient(ellipse 68% 52% at 12% -6%, rgba(87, 139, 255, .09), transparent 58%),
+    linear-gradient(180deg, var(--bg-2), var(--bg));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(ellipse 56% 46% at 10% -10%, rgba(76, 122, 255, .14), transparent 58%),
+    radial-gradient(ellipse 22% 18% at 88% 8%, rgba(115, 136, 255, .06), transparent 62%),
+    linear-gradient(180deg, #111317, #0c0e12);
+}
+button, input { font: inherit; }
+code { font-family: var(--mono); }
+[hidden] { display: none !important; }
+
+.app-shell { max-width: 1260px; margin: 0 auto; padding: 18px 22px 80px; }
+.topbar { position: sticky; top: 0; z-index: 50; padding-top: 10px; }
+.topbar-inner,
+.panel,
+.card,
+.section,
+.info-card,
+.micro,
+.storage-box,
+.net-card,
+.device-card,
+.platform,
+.list-row,
+.footer,
+.settings-detail-card,
+.settings-nav-item,
+.settings-placeholder {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+}
+.topbar-inner {
+  display: flex; align-items: center; justify-content: space-between; gap: 18px;
+  padding: 14px 18px; border-radius: 22px; min-height: 82px;
+}
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.logo-wrap,
+.m-brand__logo-wrap { width: 54px; height: 54px; display: grid; place-items: center; flex: 0 0 auto; }
+.brand-glyph,
+.m-brand__glyph {
+  display: inline-block; font-size: 40px; line-height: 1; font-weight: 700; color: var(--logo);
+  transform: translateX(2px) translateY(-1px); filter: drop-shadow(0 8px 14px rgba(0,0,0,.08));
+  animation: floatGlyph 7.8s ease-in-out infinite;
+}
+@keyframes floatGlyph {
+  0%, 100% { transform: translateX(2px) translateY(-1px); }
+  50% { transform: translateX(2px) translateY(-7px); }
+}
+.brand-text { min-width: 0; }
+.brand-text small,
+.m-brand__eyebrow { display: block; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--text-3); }
+.brand-text strong,
+.m-brand__title { display: block; font-size: 19px; letter-spacing: -.03em; }
+.brand-text span { display: block; font-size: 13px; color: var(--text-2); margin-top: 2px; }
+.topbar-controls { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.live-pill,
+.m-status-pill,
+#clock,
+.m-clock,
+.settings-trigger {
+  display: inline-flex; align-items: center; justify-content: center;
+  height: 32px; border-radius: 999px; border: 1px solid var(--line);
+  background: var(--panel-soft);
+}
+.live-pill,
+.m-status-pill { gap: 8px; padding: 0 12px; color: var(--text-2); font-size: 12px; font-weight: 600; }
+.live-dot,
+.m-status-pill__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 4px rgba(79,150,255,.12); }
+#clock,
+.m-clock { padding: 0 12px; font-family: var(--sans); font-variant-numeric: tabular-nums; letter-spacing: -0.01em; font-weight: 600; color: var(--text-2); font-size: 13px; }
+.settings-trigger {
+  width: 32px; padding: 0; color: var(--text-2); cursor: pointer;
+  transition: transform .18s ease, color .18s ease, background-color .18s ease;
+}
+.settings-trigger:hover { transform: translateY(-.5px); color: var(--text); background: color-mix(in srgb, var(--panel-soft) 92%, transparent); }
+.settings-trigger svg { width: 16px; height: 16px; fill: currentColor; }
+.conn-banner {
+  margin: 14px 2px 0; padding: 10px 14px; border-radius: 16px;
+  background: color-mix(in srgb, var(--red) 10%, var(--panel-strong));
+  color: color-mix(in srgb, var(--red) 74%, var(--text));
+  border: 1px solid color-mix(in srgb, var(--red) 20%, transparent);
+  display: none; font-size: 13px; font-weight: 600;
+}
+.conn-banner.show { display: block; }
+.m-header { display: none; }
+
+.hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(310px, .95fr); gap: 14px; margin-top: 14px; }
+.panel { padding: 24px; border-radius: var(--radius-xl); box-shadow: var(--shadow); }
+.hero-main { min-height: 330px; display: flex; flex-direction: column; justify-content: space-between; position: relative; }
+.hero-side { display: grid; gap: 14px; align-content: start; }
+.badges { display: flex; flex-wrap: wrap; gap: 10px; }
+.badge {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 13px;
+  border-radius: 999px; background: color-mix(in srgb, var(--panel-soft) 90%, transparent);
+  border: 1px solid color-mix(in srgb, var(--line) 88%, rgba(255,255,255,.10));
+  color: var(--text-2); font-size: 12px; font-weight: 560; letter-spacing: -.01em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
+}
+.badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--blue); display: block; flex: 0 0 auto; }
+.hero-title { margin: 20px 0 10px; font-size: var(--hero-title-size); line-height: 1.02; letter-spacing: -.058em; }
+.hero-title__hermes, .hero-title__control, .hero-title__surface { display: inline-block; font-weight: 620; }
+:root[data-theme="light"] .hero-title__hermes { color: #202734; }
+:root[data-theme="light"] .hero-title__control { color: #728095; }
+:root[data-theme="light"] .hero-title__surface { color: #a7b1be; }
+:root[data-theme="dark"] .hero-title__hermes { color: #f5f7fb; }
+:root[data-theme="dark"] .hero-title__control { color: #cad2de; }
+:root[data-theme="dark"] .hero-title__surface { color: #919caf; }
+.hero-sub { max-width: 780px; color: var(--text-2); line-height: 1.7; font-size: 14px; }
+.hero-automation { margin-top: 12px; max-width: 780px; }
+.auto-header { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); margin-bottom: 8px; }
+.auto-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: nowrap;
+  padding: 10px 14px; margin-top: 8px; border-radius: 18px;
+  background: var(--panel-soft); border: 1px solid var(--line); box-shadow: var(--shadow-soft);
+}
+.auto-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+.auto-dot.ok { background: var(--green); }
+.auto-dot.err { background: var(--red); }
+.auto-dot.off { background: var(--text-3); }
+.auto-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 14px; font-weight: 600; }
+.auto-schedule { display: none; }
+.auto-next { flex: 0 0 auto; white-space: nowrap; text-align: right; font-size: 12px; color: var(--text-2); font-variant-numeric: tabular-nums; }
+.hero-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 26px; }
+.micro { padding: 16px 16px 15px; border-radius: 20px; }
+.micro label,
+.metric-top label,
+.section-head span,
+.storage-box h4,
+.kv-row label,
+.platform-note,
+.net-card label,
+.device-card label,
+.service-sub,
+.list-note,
+.settings-drawer__eyebrow,
+.settings-detail-card__desc,
+.settings-home__sub,
+.settings-subpage__sub { color: var(--text-3); }
+.micro label { display: block; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
+.micro strong { display: block; margin-top: 12px; font-size: 30px; font-weight: 600; letter-spacing: -.05em; }
+.micro span { display: block; margin-top: 6px; color: var(--text-2); font-size: 13px; }
+
+.info-card,
+.section,
+.card { padding: 20px; border-radius: 26px; }
+.info-head,
+.section-head,
+.metric-top,
+.settings-detail-card__head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.info-head h3,
+.section-head h2 { margin: 0; font-size: 16px; letter-spacing: -.03em; }
+.info-head span,
+.section-head span { font-size: 12px; font-weight: 700; }
+.kv { margin-top: 10px; }
+.kv-row { display: flex; justify-content: space-between; gap: 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line-soft); }
+.kv-row:last-child { border-bottom: 0; padding-bottom: 2px; }
+.kv-row label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; }
+.kv-row strong { font-size: 14px; font-weight: 650; text-align: right; word-break: break-word; }
+
+.status-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; margin-top: 14px; }
+.metric-value { margin-top: 18px; font-size: clamp(2.2rem, 3.2vw, 3.1rem); font-weight: 620; letter-spacing: -.06em; }
+.metric-sub { margin-top: 8px; color: var(--text-2); font-size: 13px; }
+.chip,
+.tag {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 30px;
+  padding: 0 12px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .02em;
+  border: 1px solid transparent;
+}
+.chip.ok, .tag.ok { color: #0f8a54; background: rgba(18,183,106,.12); border-color: rgba(18,183,106,.18); }
+.chip.warn, .tag.warn { color: #a66906; background: rgba(245,158,11,.16); border-color: rgba(245,158,11,.20); }
+.chip.err, .tag.err { color: #d74039; background: rgba(255,90,82,.14); border-color: rgba(255,90,82,.18); }
+.chip.idle, .tag.idle { color: #667388; background: rgba(118,131,148,.15); border-color: rgba(118,131,148,.14); }
+:root[data-theme="dark"] .chip.idle,
+:root[data-theme="dark"] .tag.idle { color: #c4cedb; background: rgba(123,139,160,.18); border-color: rgba(123,139,160,.16); }
+
+.sections { display: grid; grid-template-columns: minmax(0,1.16fr) minmax(0,.94fr); gap: 14px; margin-top: 14px; }
+.stack { display: grid; gap: 14px; }
+.platforms, .list { margin-top: 14px; display: grid; gap: 12px; }
+.platform, .list-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 16px; border-radius: 20px;
+}
+.platform-name, .service-name { font-size: 15px; font-weight: 650; letter-spacing: -.02em; }
+.platform-note, .service-sub, .list-note { margin-top: 4px; font-size: 13px; line-height: 1.45; }
+.list-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.dot-status { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.dot-status.ok { background: var(--green); box-shadow: 0 0 0 5px rgba(18,183,106,.14); }
+.dot-status.err { background: var(--red); box-shadow: 0 0 0 5px rgba(255,90,82,.14); }
+.dot-status.idle { background: var(--text-3); box-shadow: 0 0 0 5px rgba(140,152,170,.14); }
+
+.net-grid, .device-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin-top: 14px; }
+.net-card, .device-card, .storage-box { padding: 16px; border-radius: 22px; position: relative; }
+.net-card label, .device-card label, .storage-box h4 {
+  display: block; margin: 0;
+  font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+}
+.net-card strong {
+  display: block; margin-top: 10px; font-size: 16px; font-weight: 650; letter-spacing: -.03em;
+  font-family: var(--mono); word-break: break-word;
+}
+.device-card strong {
+  display: block; margin-top: 10px; font-size: 16px; font-weight: 650; letter-spacing: -.01em;
+  font-family: var(--sans); word-break: break-word;
+}
+.net-card span, .device-card span { display: block; margin-top: 6px; font-size: 13px; color: var(--text-2); }
+.net-ip-display { font-family: var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.net-ip-toggle {
+  position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid transparent; color: var(--text-3); cursor: pointer;
+  transition: background .2s, border-color .2s, color .2s, transform .2s; padding: 0;
+}
+.net-ip-toggle:hover { background: var(--panel-soft); border-color: var(--line); color: var(--text-2); transform: scale(1.04); }
+.net-ip-toggle svg { width: 15px; height: 15px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; margin-top: 14px; }
+.ring-wrap { display: flex; align-items: center; gap: 14px; }
+.ring {
+  --pct: 0; width: 116px; aspect-ratio: 1/1; flex: none; position: relative; border-radius: 50%;
+  background: conic-gradient(var(--blue) calc(var(--pct) * 1%), color-mix(in srgb, var(--text) 8%, transparent) 0);
+  display: grid; place-items: center;
+}
+.ring::before {
+  content: ""; width: 100px; height: 100px; border-radius: 50%;
+  background: var(--panel-strong); border: 1px solid color-mix(in srgb, var(--text) 5%, var(--line));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.28);
+}
+.ring-inner { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; }
+.ring-inner strong { display: block; font-size: 24px; font-weight: 650; letter-spacing: -.05em; }
+.ring-inner span { display: block; margin-top: 2px; font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: .14em; font-weight: 700; }
+.storage-name { font-size: 15px; font-weight: 650; }
+.storage-sub { margin-top: 4px; color: var(--text-2); font-size: 13px; }
+.progress { height: 10px; background: color-mix(in srgb, var(--text) 7%, transparent); border-radius: 999px; overflow: hidden; }
+.progress > span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--blue), var(--blue-2)); }
+.storage-meta { display: flex; justify-content: space-between; gap: 10px; margin-top: 10px; font-size: 13px; color: var(--text-2); }
+.temp-value-large { margin-top: 12px; font-size: clamp(3rem, 4vw, 4rem); font-weight: 650; letter-spacing: -.07em; }
+.temp-bar { margin-top: 14px; height: 12px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--text) 7%, transparent); }
+.temp-bar span { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--blue), var(--teal)); }
+.footer {
+  margin-top: 16px; padding: 16px 18px; border-radius: 22px; color: var(--text-2);
+  text-align: center; font-size: 14px; letter-spacing: .02em;
+}
+.footer strong { font-weight: 700; color: var(--text); }
+.footer .footer-by { font-weight: 300; }
+
+.settings-trigger-mobile {
+  position: absolute; top: 16px; right: 16px; width: 34px; height: 34px; z-index: 3; display: none;
+}
+.settings-trigger-desktop { display: inline-flex; }
+.settings-trigger-mobile,
+.settings-trigger-desktop {
+  background: color-mix(in srgb, var(--panel-soft) 84%, transparent);
+  border-color: color-mix(in srgb, var(--line) 86%, rgba(255,255,255,.08));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 2px 10px rgba(0,0,0,.04);
+}
+.settings-trigger:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel-strong) 92%, transparent);
+  transform: translateY(-.5px);
+}
+.settings-trigger svg {
+  width: 15px; height: 15px; fill: currentColor; stroke: none;
+}
+.settings-overlay {
+  position: fixed; inset: 0; background: rgba(8, 12, 20, .16); z-index: 98;
+  opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  backdrop-filter: blur(8px) saturate(115%);
+  -webkit-backdrop-filter: blur(8px) saturate(115%);
+}
+.settings-overlay.show { opacity: 1; pointer-events: auto; }
+.settings-drawer {
+  position: fixed; top: 16px; right: 16px; bottom: 16px; width: min(392px, calc(100vw - 24px));
+  border-radius: 30px; background: color-mix(in srgb, var(--panel-strong) 88%, transparent); border: 1px solid color-mix(in srgb, var(--line) 92%, rgba(255,255,255,.08));
+  box-shadow: 0 26px 80px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.10); z-index: 99; transform: translateX(calc(100% + 24px));
+  transition: transform .24s cubic-bezier(.22,.9,.32,1); display: flex; flex-direction: column; overflow: hidden;
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+}
+.settings-drawer::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.02) 22%, rgba(255,255,255,0) 44%);
+}
+.settings-drawer.show { transform: translateX(0); }
+.settings-drawer__head {
+  position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  padding: 20px 18px 14px; border-bottom: 1px solid color-mix(in srgb, var(--line-soft) 84%, transparent);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 85%, transparent), color-mix(in srgb, var(--panel) 82%, transparent));
+}
+.settings-drawer__title { margin: 2px 0 0; font-size: 22px; letter-spacing: -.048em; }
+.settings-close {
+  appearance: none; -webkit-appearance: none; flex: 0 0 auto; width: 32px; height: 32px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--line) 84%, rgba(255,255,255,.08));
+  background: color-mix(in srgb, var(--panel-soft) 84%, transparent); color: var(--text-2); cursor: pointer;
+  font-size: 17px; line-height: 1; display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 4px 10px rgba(0,0,0,.06);
+  margin-top: 2px;
+}
+.settings-drawer__body { position: relative; padding: 18px; overflow: auto; }
+.settings-trigger, .settings-close, .settings-back, .settings-nav-item, .settings-segment__option {
+  -webkit-tap-highlight-color: transparent;
+}
+.settings-pages, .settings-home, .settings-subpage { display: grid; gap: 14px; }
+.settings-home__title, .settings-subpage__title { font-size: 22px; font-weight: 700; letter-spacing: -.045em; }
+.settings-home__sub, .settings-subpage__sub { margin-top: 4px; font-size: 13px; }
+.settings-nav-item, .settings-detail-card {
+  border-radius: 24px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 89%, transparent), color-mix(in srgb, var(--panel) 86%, transparent));
+  border: 1px solid color-mix(in srgb, var(--line) 88%, rgba(255,255,255,.08));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.11), 0 8px 22px rgba(0,0,0,.08);
+}
+.settings-nav-item {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 18px 18px; text-align: left; cursor: pointer; color: inherit;
+}
+.settings-nav-item__left { min-width: 0; }
+.settings-nav-item__title, .settings-detail-card__title { font-size: 15px; font-weight: 650; letter-spacing: -.02em; }
+.settings-nav-item__desc { margin-top: 4px; font-size: 13px; color: var(--text-3); line-height: 1.45; }
+.settings-nav-item__right { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+.settings-nav-item__value, .settings-detail-card__value { color: color-mix(in srgb, var(--blue) 64%, var(--text)); font-size: 13px; font-weight: 600; }
+.settings-nav-item__chevron { color: color-mix(in srgb, var(--blue) 60%, var(--text-2)); font-size: 18px; line-height: 1; }
+.settings-back {
+  appearance: none; -webkit-appearance: none; display: inline-flex; align-items: center; align-self: flex-start; gap: 8px;
+  width: fit-content; min-width: 82px; height: 36px; padding: 0 14px 0 11px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--line) 84%, rgba(255,255,255,.08));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--panel-soft) 88%, transparent), color-mix(in srgb, var(--panel) 83%, transparent));
+  color: var(--text); cursor: pointer; font-size: 13px; font-weight: 600; letter-spacing: -.01em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 6px 14px rgba(0,0,0,.06);
+}
+.settings-back__chevron { width: 14px; height: 14px; display: inline-flex; align-items: center; justify-content: center; color: color-mix(in srgb, var(--blue) 56%, var(--text)); }
+.settings-subpage__intro { margin-top: 6px; }
+.settings-detail-card { padding: 18px; }
+body.settings-open .topbar,
+body.settings-open .m-header,
+body.settings-open .conn-banner,
+body.settings-open main {
+  filter: blur(12px) saturate(.96);
+  transform: scale(.996);
+  transform-origin: top center;
+  transition: filter .24s ease, transform .24s ease;
+}
+.topbar,
+.m-header,
+.conn-banner,
+main { transition: filter .24s ease, transform .24s ease; }
+.settings-segment {
+  display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-top: 14px;
+  padding: 6px; border-radius: 18px; background: color-mix(in srgb, var(--panel-soft) 80%, transparent); border: 1px solid var(--line-soft);
+}
+.settings-segment--2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.settings-segment__option {
+  appearance: none; -webkit-appearance: none; height: 38px; border-radius: 14px; border: 1px solid transparent;
+  background: transparent; color: var(--text-2); cursor: pointer; font-size: 13px; font-weight: 600;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease;
+  -webkit-tap-highlight-color: transparent; tap-highlight-color: transparent; outline: none;
+}
+.settings-segment__option:hover { color: var(--text); background: color-mix(in srgb, var(--panel-soft) 92%, transparent); }
+.settings-segment__option:focus,
+.settings-segment__option:focus-visible,
+.settings-segment__option:active { outline: none; box-shadow: none; }
+.settings-segment__option.active,
+.settings-segment__option[aria-pressed="true"] {
+  background: var(--panel-strong); color: var(--text); border-color: var(--line);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 1px 2px rgba(0,0,0,.04);
+}
+
+@media (max-width: 1200px) {
+  .app-shell { max-width: 1080px; padding: 16px 20px 72px; }
+}
+@media (max-width: 1024px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-side { margin-top: 14px; }
+  .sections { grid-template-columns: 1fr; }
+}
+@media (max-width: 900px) {
+  .status-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .net-grid, .device-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 700px) {
+  .app-shell { padding: 14px 14px 60px; }
+  .topbar { display: none; }
+  .settings-trigger-desktop { display: none; }
+  .settings-trigger-mobile { display: inline-flex; }
+  .m-header {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand status" "brand clock";
+    align-items: center; column-gap: 12px; row-gap: 10px; padding: 18px 18px 16px;
+    border-radius: 28px; background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow-soft); margin-bottom: 10px;
+  }
+  .m-brand { grid-area: brand; display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .m-brand__logo-wrap { width: 32px; height: 32px; }
+  .m-brand__glyph { font-size: 32px; }
+  .m-brand__title { font-size: 17px; }
+  .m-brand__eyebrow { font-size: 10px; line-height: 1; }
+  .m-status-pill { grid-area: status; justify-self: end; }
+  .m-clock { grid-area: clock; justify-self: end; }
+  .hero-title { font-size: clamp(1.5rem, 5.5vw, 2rem); margin-top: 12px; line-height: 1.06; letter-spacing: -.04em; }
+  .hero-sub { margin-top: 4px; font-size: 13px; line-height: 1.5; }
+  .badges { gap: 6px; }
+  .badge { padding: 6px 10px; font-size: 10px; }
+  .hero-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 18px; }
+  .micro { padding: 10px 12px; border-radius: 16px; }
+  .micro strong { font-size: 1.3rem; }
+  .micro label { font-size: 10px; }
+  .micro span { font-size: 10px; }
+  .auto-row { padding: 10px 12px; border-radius: 16px; margin-top: 6px; }
+  .auto-name { font-size: 14px; }
+  .auto-next { font-size: 12px; }
+  .status-grid, .net-grid, .device-grid { grid-template-columns: 1fr 1fr; }
+  .grid-2, .settings-segment { grid-template-columns: 1fr; }
+  .settings-segment--2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .panel, .card, .section, .info-card { padding: 14px 16px; }
+  .settings-drawer {
+    top: auto; right: 10px; left: 10px; bottom: 10px; width: auto; border-radius: 30px;
+    transform: translateY(calc(100% + 16px));
+  }
+  .settings-drawer.show { transform: translateY(0); }
+  .settings-back { height: 38px; padding: 0 15px 0 12px; border-radius: 999px; }
+}
+@media (max-width: 520px) {
+  .app-shell { padding: 10px 10px 50px; }
+  .hero-stats, .status-grid, .net-grid, .device-grid { grid-template-columns: 1fr; }
+  .platform, .list-row { gap: 10px; }
+  .platform > div:first-child, .list-left { min-width: 0; flex: 1 1 auto; }
+  .platform .tag, .list-row .tag, .platform .chip, .list-row .chip { flex: 0 0 auto; margin-left: 12px; }
+  .kv-row { align-items: flex-start; flex-direction: column; }
+  .kv-row strong { text-align: left; }
+  .panel, .card, .section, .info-card { border-radius: 14px; padding: 12px; }
+}
+
+.settings-inactive-panel {
+  display:grid; gap:14px; margin-top: 10px;
+}
+.settings-inactive-note {
+  padding: 18px 18px 16px; border-radius: 24px;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  border: 1px solid var(--line); box-shadow: var(--shadow-soft);
+}
+.settings-inactive-note__title { font-size: 18px; font-weight: 700; letter-spacing: -.03em; }
+.settings-inactive-note__desc { margin-top: 6px; color: var(--text-2); line-height: 1.6; font-size: 14px; }
+.settings-inactive-list { display:grid; gap:12px; }
+.settings-inactive-row {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding: 15px 16px; border-radius: 20px;
+  background: color-mix(in srgb, var(--panel-soft) 92%, transparent); border:1px solid var(--line);
+}
+.settings-inactive-row__main { min-width:0; }
+.settings-inactive-row__title { font-size:16px; font-weight:650; letter-spacing:-.02em; }
+.settings-inactive-row__sub { margin-top:4px; font-size:13px; color:var(--text-2); }
+.settings-badge-off {
+  flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; min-height:30px; padding:0 12px;
+  border-radius:999px; font-size:12px; font-weight:700; letter-spacing:.01em;
+  color: var(--text-2); background: color-mix(in srgb, var(--panel-soft) 96%, transparent); border:1px solid var(--line);
+}
+
+
+:root[data-transparency="soft"][data-theme="light"] {
+  --panel: rgba(255,255,255,.94);
+  --panel-strong: rgba(255,255,255,.985);
+  --panel-soft: rgba(248,250,253,.97);
+}
+:root[data-transparency="soft"][data-theme="dark"] {
+  --panel: rgba(28,32,38,.975);
+  --panel-strong: rgba(34,39,46,.992);
+  --panel-soft: rgba(42,47,55,.96);
+}
+:root[data-transparency="soft"] .topbar-inner,
+:root[data-transparency="soft"] .panel,
+:root[data-transparency="soft"] .card,
+:root[data-transparency="soft"] .section,
+:root[data-transparency="soft"] .footer,
+:root[data-transparency="soft"] .info-card,
+:root[data-transparency="soft"] .micro,
+:root[data-transparency="soft"] .storage-box,
+:root[data-transparency="soft"] .net-card,
+:root[data-transparency="soft"] .device-card,
+:root[data-transparency="soft"] .platform,
+:root[data-transparency="soft"] .list-row,
+:root[data-transparency="soft"] .settings-placeholder,
+:root[data-transparency="soft"] .settings-drawer,
+:root[data-transparency="soft"] .m-header,
+:root[data-transparency="soft"] .badge,
+:root[data-transparency="soft"] .live-pill,
+:root[data-transparency="soft"] .m-status-pill,
+:root[data-transparency="soft"] #clock,
+:root[data-transparency="soft"] .m-clock {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+:root[data-transparency="soft"] .topbar-inner,
+:root[data-transparency="soft"] .panel,
+:root[data-transparency="soft"] .card,
+:root[data-transparency="soft"] .section,
+:root[data-transparency="soft"] .footer,
+:root[data-transparency="soft"] .info-card,
+:root[data-transparency="soft"] .micro,
+:root[data-transparency="soft"] .storage-box,
+:root[data-transparency="soft"] .net-card,
+:root[data-transparency="soft"] .device-card,
+:root[data-transparency="soft"] .platform,
+:root[data-transparency="soft"] .list-row,
+:root[data-transparency="soft"] .settings-drawer,
+:root[data-transparency="soft"] .m-header {
+  box-shadow: 0 6px 16px rgba(0,0,0,.05) !important;
+}
+:root[data-transparency="soft"][data-theme="dark"] .topbar-inner,
+:root[data-transparency="soft"][data-theme="dark"] .panel,
+:root[data-transparency="soft"][data-theme="dark"] .card,
+:root[data-transparency="soft"][data-theme="dark"] .section,
+:root[data-transparency="soft"][data-theme="dark"] .footer,
+:root[data-transparency="soft"][data-theme="dark"] .info-card,
+:root[data-transparency="soft"][data-theme="dark"] .micro,
+:root[data-transparency="soft"][data-theme="dark"] .storage-box,
+:root[data-transparency="soft"][data-theme="dark"] .net-card,
+:root[data-transparency="soft"][data-theme="dark"] .device-card,
+:root[data-transparency="soft"][data-theme="dark"] .platform,
+:root[data-transparency="soft"][data-theme="dark"] .list-row,
+:root[data-transparency="soft"][data-theme="dark"] .settings-drawer,
+:root[data-transparency="soft"][data-theme="dark"] .m-header {
+  box-shadow: 0 8px 18px rgba(0,0,0,.14) !important;
+}
+
+.settings-note-soft {
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--panel) 94%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-soft);
+}
+.settings-note-soft__title {
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+.settings-note-soft__desc {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+
+:root[data-motion="reduced"] .brand-glyph {
+  animation: none !important;
+  transform: translateX(2px) translateY(-1px) !important;
+}
+:root[data-motion="reduced"] .m-brand__glyph {
+  animation: none !important;
+  transform: none !important;
+}
+:root[data-motion="reduced"] .settings-overlay,
+:root[data-motion="reduced"] .settings-drawer,
+:root[data-motion="reduced"] .settings-trigger,
+:root[data-motion="reduced"] .settings-back,
+:root[data-motion="reduced"] .settings-close,
+:root[data-motion="reduced"] .settings-nav-item,
+:root[data-motion="reduced"] .settings-segment__option,
+:root[data-motion="reduced"] .topbar-inner,
+:root[data-motion="reduced"] .m-header {
+  transition: none !important;
+}
+
+
+
+
+/* ===== language-aware typography ===== */
+html[lang="en"] {
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI Variable Text", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+html[lang="zh-CN"] {
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans CJK SC", "Source Han Sans SC", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+html[lang="zh-CN"] .chip,
+html[lang="zh-CN"] .tag {
+  letter-spacing: 0;
+}
+
+html[lang="zh-CN"] .micro label,
+html[lang="zh-CN"] .metric-top label,
+html[lang="zh-CN"] .storage-box h4,
+html[lang="zh-CN"] .kv-row label,
+html[lang="zh-CN"] .net-card label,
+html[lang="zh-CN"] .device-card label {
+  letter-spacing: .02em;
+  text-transform: none;
+}
+
+html[lang="zh-CN"] .settings-drawer__title,
+html[lang="zh-CN"] .settings-home__title,
+html[lang="zh-CN"] .settings-subpage__title,
+html[lang="zh-CN"] .settings-nav-item__title,
+html[lang="zh-CN"] .settings-detail-card__title,
+html[lang="zh-CN"] .info-head h3,
+html[lang="zh-CN"] .section-head h2 {
+  letter-spacing: -.02em;
+}
+
+html[lang="zh-CN"] .device-card strong,
+html[lang="zh-CN"] .platform-note,
+html[lang="zh-CN"] .service-sub,
+html[lang="zh-CN"] .list-note,
+html[lang="zh-CN"] .metric-sub {
+  letter-spacing: 0;
+}
+
+
+
+/* ===== settings refinement consolidated ===== */
+.settings-drawer__body { padding: 16px 18px 18px; }
+.settings-pages, .settings-home, .settings-subpage { gap: 12px; }
+.settings-home__intro { padding: 2px 2px 0; }
+
+.settings-subpage__title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.04em;
+  line-height: 1.1;
+}
+
+.settings-subpage__sub {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
+
+.settings-nav-item__title,
+.settings-detail-card__title {
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+
+.settings-nav-item__value,
+.settings-detail-card__value {
+  font-size: 14px;
+}
+
+.settings-detail-card__desc {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.38;
+  color: var(--text-3);
+}
+
+.settings-detail-card__head {
+  align-items: flex-start;
+}
+
+.settings-detail-card__head > div:first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.settings-detail-card__value {
+  flex: 0 0 auto;
+  min-width: 4.8em;
+  white-space: nowrap;
+  writing-mode: horizontal-tb !important;
+  text-orientation: mixed !important;
+  line-height: 1;
+  text-align: right;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: flex-start;
+}
+
+.settings-segment__option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1;
+  padding: 0 10px;
+}
+
+.settings-note-soft {
+  margin-top: 14px;
+  min-height: 56px;
+  padding: 0 16px;
+  display: grid;
+  align-items: stretch;
+}
+
+.settings-note-soft__title {
+  margin: 0;
+}
+
+.settings-note-soft__desc {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  display: grid;
+  align-content: center;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text-2);
+}
+
+
+
+/* ===== capability-driven visibility ===== */
+[data-hcs-hidden="true"] {
+  display: none !important;
+}
+
+.status-grid[data-visible-cards="1"] {
+  grid-template-columns: 1fr;
+}
+
+.status-grid[data-visible-cards="2"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.status-grid[data-visible-cards="3"] {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (max-width: 700px) {
+  .status-grid[data-visible-cards="1"],
+  .status-grid[data-visible-cards="2"],
+  .status-grid[data-visible-cards="3"] {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+
+
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="logo-wrap"><span class="brand-glyph" aria-hidden="true">⚕</span></div>
+          <div class="brand-text">
+            <small id="brandEyebrowDesktop">Hermes Agent</small>
+            <strong id="brandTitleDesktop">Dashboard</strong>
+          </div>
+        </div>
+        <div class="topbar-controls">
+          <span id="clock">--:--:--</span>
+          <div class="live-pill"><span class="live-dot"></span>在线</div>
+          <button class="settings-trigger settings-trigger-desktop" id="settingsTriggerDesktop" type="button" aria-label="打开设置">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 8.6a3.4 3.4 0 1 0 0 6.8a3.4 3.4 0 0 0 0-6.8Zm8 3.4-.88-.31a7.9 7.9 0 0 0-.47-1.14l.4-.84a1 1 0 0 0-.19-1.13l-1.18-1.18a1 1 0 0 0-1.13-.19l-.84.4c-.37-.18-.75-.34-1.14-.47L14 4a1 1 0 0 0-.97-.75h-1.66A1 1 0 0 0 10.4 4l-.31.88c-.39.13-.77.29-1.14.47l-.84-.4a1 1 0 0 0-1.13.19L5.8 6.32a1 1 0 0 0-.19 1.13l.4.84c-.18.37-.34.75-.47 1.14L4.66 10A1 1 0 0 0 3.9 11v1.66a1 1 0 0 0 .75.97l.88.31c.13.39.29.77.47 1.14l-.4.84a1 1 0 0 0 .19 1.13l1.18 1.18a1 1 0 0 0 1.13.19l.84-.4c.37.18.75.34 1.14.47l.31.88a1 1 0 0 0 .97.75h1.66a1 1 0 0 0 .97-.75l.31-.88c.39-.13.77-.29 1.14-.47l.84.4a1 1 0 0 0 1.13-.19l1.18-1.18a1 1 0 0 0 .19-1.13l-.4-.84c.18-.37.34-.75.47-1.14l.88-.31a1 1 0 0 0 .75-.97V11a1 1 0 0 0-.75-.97Z"></path>
+            </svg>
+          </button>
+</div>
+      </div>
+      <div class="conn-banner" id="connBanner">连接中断 · 当前显示上次成功快照</div>
+    </header>
+
+    <div class="m-header">
+      <div class="m-brand">
+        <div class="m-brand__logo-wrap">
+          <span class="m-brand__glyph" aria-hidden="true">⚕</span>
+        </div>
+        <div class="m-brand__text">
+          <small id="brandEyebrowMobile" class="m-brand__eyebrow">HERMES AGENT</small>
+          <strong id="brandTitleMobile" class="m-brand__title">Dashboard</strong>
+        </div>
+      </div>
+
+      <div class="m-status-pill">
+        <span class="m-status-pill__dot"></span>
+        <span class="m-status-pill__text">在线</span>
+      </div>
+
+      <span id="clockMobile" class="m-clock">--:--:--</span>
+</div>
+
+    <main>
+      <section class="hero">
+        <div class="panel hero-main">
+          <button class="settings-trigger settings-trigger-mobile" id="settingsTriggerMobile" type="button" aria-label="打开设置">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 8.6a3.4 3.4 0 1 0 0 6.8a3.4 3.4 0 0 0 0-6.8Zm8 3.4-.88-.31a7.9 7.9 0 0 0-.47-1.14l.4-.84a1 1 0 0 0-.19-1.13l-1.18-1.18a1 1 0 0 0-1.13-.19l-.84.4c-.37-.18-.75-.34-1.14-.47L14 4a1 1 0 0 0-.97-.75h-1.66A1 1 0 0 0 10.4 4l-.31.88c-.39.13-.77.29-1.14.47l-.84-.4a1 1 0 0 0-1.13.19L5.8 6.32a1 1 0 0 0-.19 1.13l.4.84c-.18.37-.34.75-.47 1.14L4.66 10A1 1 0 0 0 3.9 11v1.66a1 1 0 0 0 .75.97l.88.31c.13.39.29.77.47 1.14l-.4.84a1 1 0 0 0 .19 1.13l1.18 1.18a1 1 0 0 0 1.13.19l.84-.4c.37.18.75.34 1.14.47l.31.88a1 1 0 0 0 .97.75h1.66a1 1 0 0 0 .97-.75l.31-.88c.39-.13.77-.29 1.14-.47l.84.4a1 1 0 0 0 1.13-.19l1.18-1.18a1 1 0 0 0 .19-1.13l-.4-.84c.18-.37.34-.75.47-1.14l.88-.31a1 1 0 0 0 .75-.97V11a1 1 0 0 0-.75-.97Z"></path>
+            </svg>
+          </button>
+          <div>
+            <div class="badges">
+              <div class="badge"><span id="badge-os">Debian 13</span></div>
+              <div class="badge" id="badge-host">Host</div>
+              <div class="badge" id="badge-ip">IP</div>
+            </div>
+            <h1 class="hero-title"><span class="hero-title__hermes">Hermes</span> <span class="hero-title__control">Control</span> <span class="hero-title__surface">Surface</span></h1>
+            <div class="hero-sub" id="heroSummary">—</div>
+            <div class="hero-automation" id="heroAutomation"></div>
+          </div>
+          <div class="hero-stats">
+            <div class="micro">
+              <label>已运行</label>
+              <strong id="uptimeVal">—</strong>
+              <span>自上次启动</span>
+            </div>
+            <div class="micro">
+              <label>CPU 温度</label>
+              <strong id="cpuTempHero">—</strong>
+              <span>封装传感器</span>
+            </div>
+            <div class="micro">
+              <label>负载</label>
+              <strong id="loadVal">—</strong>
+              <span id="loadSub">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="info-card">
+            <div class="info-head"><h3>Agent 信息</h3></div>
+            <div class="kv">
+              <div class="kv-row"><label>版本</label><strong id="agentVersion">—</strong></div>
+              <div class="kv-row"><label>构建日期</label><strong id="agentBuildDate">—</strong></div>
+              <div class="kv-row"><label>提交</label><strong id="agentCommit">—</strong></div>
+              <div class="kv-row"><label>模型</label><strong id="agentModel">—</strong></div>
+              <div class="kv-row"><label>备用模型</label><strong id="agentFallbackModel">—</strong></div>
+            </div>
+          </div>
+          <div class="info-card" data-section="platforms">
+            <div class="info-head"><h3>平台状态</h3></div>
+            <div class="platforms">
+              <div class="platform" data-platform="telegram">
+                <div>
+                  <div class="platform-name">Telegram</div>
+                  <div class="platform-note">实时连接状态</div>
+                </div>
+                <div class="tag idle" id="telegramStatus">—</div>
+              </div>
+              <div class="platform" data-platform="discord">
+                <div>
+                  <div class="platform-name">Discord</div>
+                  <div class="platform-note">实时连接状态</div>
+                </div>
+                <div class="tag idle" id="discordStatus">—</div>
+              </div>
+              <div class="platform" data-platform="homeassistant">
+                <div>
+                  <div class="platform-name">Home Assistant</div>
+                  <div class="platform-note">实时连接状态</div>
+                </div>
+                <div class="tag idle" id="haStatus">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="status-grid" data-capability-group="cards">
+        <article class="card" data-card="ups">
+          <div class="metric-top"><label>UPS</label><div class="chip idle" id="upsHealth">—</div></div>
+          <div class="metric-value" id="upsBattery">—</div>
+          <div class="metric-sub" id="upsModel">—</div>
+        </article>
+        <article class="card" data-card="memory">
+          <div class="metric-top"><label>内存</label><div class="chip idle" id="memHealth">—</div></div>
+          <div class="metric-value" id="memPercent">—</div>
+          <div class="metric-sub" id="memSub">—</div>
+        </article>
+        <article class="card" data-card="disk">
+          <div class="metric-top"><label>主磁盘</label><div class="chip idle" id="diskHealth">—</div></div>
+          <div class="metric-value" id="diskPercent">—</div>
+          <div class="metric-sub" id="diskSub">—</div>
+        </article>
+      </section>
+
+      <section class="sections">
+        <div class="stack">
+          <section class="section" data-section="services">
+            <div class="section-head"><h2>服务</h2></div>
+            <div class="list">
+              <div class="list-row" data-service="hermes">
+                <div class="list-left"><span class="dot-status" id="svc-hermes-dot"></span><div><div class="service-name">Hermes Agent</div><div class="service-sub" id="svc-hermes-sub">—</div></div></div>
+                <div class="tag idle" id="svc-hermes-tag">—</div>
+              </div>
+              <div class="list-row" data-service="docker">
+                <div class="list-left"><span class="dot-status" id="svc-docker-dot"></span><div><div class="service-name">Docker</div><div class="service-sub" id="svc-docker-sub">—</div></div></div>
+                <div class="tag idle" id="svc-docker-tag">—</div>
+              </div>
+              <div class="list-row" data-service="crowdsec">
+                <div class="list-left"><span class="dot-status" id="svc-crowdsec-dot"></span><div><div class="service-name">CrowdSec</div><div class="service-sub" id="svc-crowdsec-sub">—</div></div></div>
+                <div class="tag idle" id="svc-crowdsec-tag">—</div>
+              </div>
+              <div class="list-row" data-service="pipewire">
+                <div class="list-left"><span class="dot-status" id="svc-pipewire-dot"></span><div><div class="service-name">PipeWire</div><div class="service-sub" id="svc-pipewire-sub">—</div></div></div>
+                <div class="tag idle" id="svc-pipewire-tag">—</div>
+              </div>
+              <div class="list-row" data-service="smb">
+                <div class="list-left"><span class="dot-status" id="svc-smb-dot"></span><div><div class="service-name">SMB</div><div class="service-sub" id="svc-smb-sub">—</div></div></div>
+                <div class="tag idle" id="svc-smb-tag">—</div>
+              </div>
+              <div class="list-row" data-service="watchdog">
+                <div class="list-left"><span class="dot-status" id="svc-watchdog-dot"></span><div><div class="service-name">Watchdog</div><div class="service-sub" id="svc-watchdog-sub">—</div></div></div>
+                <div class="tag idle" id="svc-watchdog-tag">—</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" data-section="network">
+            <div class="section-head"><h2>网络</h2></div>
+            <div class="net-grid">
+              <div class="net-card">
+                <button class="net-ip-toggle" data-net="wan" aria-label="toggle IP">
+                  <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <label>运营商</label>
+                <strong class="net-ip-display" id="net-wan" data-raw="">—</strong>
+                <span>WAN</span>
+              </div>
+              <div class="net-card">
+                <button class="net-ip-toggle" data-net="proxy" aria-label="toggle IP">
+                  <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <label>代理出口</label>
+                <strong class="net-ip-display" id="net-proxy" data-raw="">—</strong>
+                <span>PROXY</span>
+              </div>
+              <div class="net-card">
+                <button class="net-ip-toggle" data-net="gw" aria-label="toggle IP">
+                  <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <label>网关</label>
+                <strong class="net-ip-display" id="net-gw" data-raw="">—</strong>
+                <span>GATEWAY</span>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="stack">
+          <section class="section" data-section="storage">
+            <div class="section-head"><h2>存储与内存</h2></div>
+            <div class="grid-2">
+              <div class="storage-box">
+                <h4>RAM</h4>
+                <div class="ring-wrap">
+                  <div class="ring" id="ramRing" style="--pct: 0"><div class="ring-inner"><div><strong id="ramPct">—</strong></div></div></div>
+                  <div><div class="storage-name">系统内存</div><div class="storage-sub" id="ramSub">—</div></div>
+                </div>
+              </div>
+              <div class="storage-box">
+                <h4>ZRAM</h4>
+                <div class="ring-wrap">
+                  <div class="ring" id="zramRing" style="--pct: 0; background: conic-gradient(var(--purple) 0%, color-mix(in srgb, var(--text) 6%, transparent) 0)"><div class="ring-inner"><div><strong id="zramPct">—</strong></div></div></div>
+                  <div><div class="storage-name">压缩交换</div><div class="storage-sub" id="zramSub">—</div></div>
+                </div>
+              </div>
+              <div class="storage-box">
+                <h4 id="disk1Name">Disk 1</h4>
+                <div class="progress"><span id="disk1Bar"></span></div>
+                <div class="storage-meta"><span id="disk1Meta">—</span><span id="disk1Pct">—</span></div>
+              </div>
+              <div class="storage-box">
+                <h4 id="disk2Name">Disk 2</h4>
+                <div class="progress"><span id="disk2Bar" style="background: linear-gradient(90deg, var(--teal), var(--blue));"></span></div>
+                <div class="storage-meta"><span id="disk2Meta">—</span><span id="disk2Pct">—</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="section" data-section="cpu_temp">
+            <div class="section-head"><h2>CPU 温度</h2></div>
+            <div class="temp-value-large" id="tempNum">—</div>
+            <div class="metric-sub" id="cpuTempSub">封装传感器</div>
+            <div class="temp-bar"><span id="tempBar"></span></div>
+          </section>
+
+          <section class="section" data-section="audio">
+            <div class="section-head"><h2>音频</h2></div>
+            <div class="device-grid">
+              <div class="device-card">
+                <label>蓝牙音箱</label>
+                <strong id="bt-name">—</strong>
+                <span id="bt-sub">—</span>
+              </div>
+              <div class="device-card">
+                <label>MPV</label>
+                <strong id="mpv-status">—</strong>
+                <span id="mpv-sub">—</span>
+              </div>
+              <div class="device-card">
+                <label>音频服务</label>
+                <strong>PipeWire</strong>
+                <span id="pw-sub">—</span>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <div class="footer">⚕ <strong id="footerBrand">Hermes Agent</strong> · <span class="footer-by">Designed by</span> <strong>SpadesV</strong></div>
+    </main>
+  </div>
+
+<script>
+(function() {
+  var root = document.documentElement;
+  var connBanner = document.getElementById('connBanner');
+  var themeToggle = document.getElementById('themeToggle');
+  var themeKey = 'hermes-dashboard-theme';
+  var lastData = null;
+  var mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function applyTheme(theme) {
+    root.setAttribute('data-theme', theme);
+  }
+
+  function resolveTheme() {
+    var saved = localStorage.getItem(themeKey);
+    if (saved === 'light' || saved === 'dark') return saved;
+    return mediaQuery.matches ? 'dark' : 'light';
+  }
+
+  applyTheme(resolveTheme());
+
+  try {
+    mediaQuery.addEventListener('change', function(e) {
+      var saved = localStorage.getItem(themeKey);
+      if (saved !== 'light' && saved !== 'dark') applyTheme(e.matches ? 'dark' : 'light');
+    });
+  } catch (_) {
+    mediaQuery.addListener(function(e) {
+      var saved = localStorage.getItem(themeKey);
+      if (saved !== 'light' && saved !== 'dark') applyTheme(e.matches ? 'dark' : 'light');
+    });
+  }
+
+  if (themeToggle) themeToggle.addEventListener('click', function() {
+    var current = root.getAttribute('data-theme') || resolveTheme();
+    var next = current === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(themeKey, next);
+    applyTheme(next);
+  });
+  var themeToggleMobile = document.getElementById('themeToggleMobile');
+  if (themeToggleMobile) {
+    themeToggleMobile.addEventListener('click', function() {
+      var current = root.getAttribute('data-theme') || resolveTheme();
+      var next = current === 'dark' ? 'light' : 'dark';
+      localStorage.setItem(themeKey, next);
+      applyTheme(next);
+    });
+  }
+
+  function setText(id, value) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value == null || value === '' ? '—' : value;
+  }
+  /* Automation */
+  function appendAutoText(parent, className, text) {
+    var span = document.createElement('span');
+    span.className = className;
+    span.textContent = text || '';
+    parent.appendChild(span);
+    return span;
+  }
+
+  function loadAutomation() {
+    fetch('/api/cron-jobs', { cache: 'no-store' })
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) {
+        if (!data || !data.jobs) return;
+        var container = document.getElementById('heroAutomation');
+        if (!container) return;
+
+        var jobs = Array.isArray(data.jobs) ? data.jobs : [];
+        container.textContent = '';
+
+        var header = document.createElement('div');
+        header.className = 'auto-header';
+        header.textContent = '定时任务';
+        container.appendChild(header);
+
+        for (var i = 0; i < jobs.length && i < 3; i++) {
+          var j = jobs[i] || {};
+          var dotCls = j.enabled === false ? 'off' : (j.last_status === 'ok' ? 'ok' : 'err');
+          var nextStr = '—';
+          if (j.next_run_at) {
+            var dt = new Date(j.next_run_at);
+            if (!isNaN(dt.getTime())) {
+              var now = new Date();
+              var diffMs = dt - now;
+
+              function pad(n) { return String(n).padStart(2, '0'); }
+              function weekdayLabel(d) { return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()]; }
+
+              var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+              var tomorrow = new Date(today.getTime() + 86400000);
+              var td = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+              var hhmm = pad(dt.getHours()) + ':' + pad(dt.getMinutes());
+
+              var abs = hhmm;
+              if (td.getTime() === today.getTime()) abs = '今天 ' + hhmm;
+              else if (td.getTime() === tomorrow.getTime()) abs = '明天 ' + hhmm;
+              else {
+                var dd = Math.floor((td - today) / 86400000);
+                if (dd >= 0 && dd < 7) abs = weekdayLabel(dt) + ' ' + hhmm;
+                else abs = pad(dt.getMonth() + 1) + '-' + pad(dt.getDate()) + ' ' + hhmm;
+              }
+
+              var rel = '即将';
+              if (diffMs > 0) {
+                var mins = Math.round(diffMs / 60000);
+                if (mins < 60) rel = mins + 'm';
+                else {
+                  var h = Math.floor(mins / 60);
+                  var m = mins % 60;
+                  rel = m === 0 ? (h + 'h') : (h + 'h ' + m + 'm');
+                }
+              }
+              nextStr = abs + ' · ' + rel;
+            }
+          }
+
+          var row = document.createElement('div');
+          row.className = 'auto-row';
+
+          var dot = document.createElement('span');
+          dot.className = 'auto-dot ' + dotCls;
+          row.appendChild(dot);
+
+          appendAutoText(row, 'auto-name', j.display_name || j.name || '—');
+          appendAutoText(row, 'auto-schedule', j.schedule_display || '');
+          appendAutoText(row, 'auto-next', nextStr);
+          container.appendChild(row);
+        }
+      })
+      .catch(function() {});
+  }
+
+  /* Network privacy */
+  var netReveal = window.__netReveal || { wan: false, proxy: false, gw: false };
+  window.__netReveal = netReveal;
+
+  function maskIp(ip) {
+    if (!ip || ip === '—') return '—';
+    var parts = String(ip).split('.');
+    if (parts.length !== 4) return String(ip).replace(/.(?=.{4})/g, '*');
+    return parts[0] + '.***.' + '*'.repeat(Math.max(1, parts[2].length)) + '.' + parts[3];
+  }
+
+  function updateNetField(key, value) {
+    var map = { wan: 'net-wan', proxy: 'net-proxy', gw: 'net-gw' };
+    var elId = map[key];
+    if (!elId) return;
+    setText(elId, netReveal[key] ? value : maskIp(value));
+  }
+
+  function syncNetToggleVisual(btn, shown) {
+    if (!btn) return;
+    btn.classList.toggle('revealed', !!shown);
+    btn.setAttribute('aria-pressed', shown ? 'true' : 'false');
+    btn.setAttribute('title', shown ? '隐藏 IP' : '显示 IP');
+  }
+
+  function bindNetToggles() {
+    var buttons = document.querySelectorAll('.net-ip-toggle[data-net]');
+    buttons.forEach(function(btn) {
+      if (btn.__netBound) return;
+      btn.__netBound = true;
+      var key = btn.getAttribute('data-net');
+      if (!key) return;
+      syncNetToggleVisual(btn, !!netReveal[key]);
+      btn.addEventListener('click', function() {
+        netReveal[key] = !netReveal[key];
+        syncNetToggleVisual(btn, !!netReveal[key]);
+        if (window.__lastStats && window.__lastStats.network) {
+          var net = window.__lastStats.network;
+          if (key === 'wan') updateNetField('wan', net.wan_ip);
+          if (key === 'proxy') updateNetField('proxy', net.proxy_ip);
+          if (key === 'gw') updateNetField('gw', net.gateway_ip);
+        }
+      });
+    });
+  }
+
+
+  function pctText(n) {
+    return typeof n === 'number' && isFinite(n) ? Math.round(n) + '%' : '—';
+  }
+
+  function numText(n, digits) {
+    return typeof n === 'number' && isFinite(n) ? n.toFixed(digits == null ? 1 : digits) : '—';
+  }
+
+  function humanGB(n) {
+    return typeof n === 'number' && isFinite(n) ? Math.round(n * 10) / 10 + ' GB' : '—';
+  }
+
+  function safeTemp(d) {
+    if (!d || !Array.isArray(d.temps) || typeof d.temps[0] !== 'number') return null;
+    return d.temps[0];
+  }
+
+  function healthClass(percent) {
+    if (typeof percent !== 'number' || !isFinite(percent)) return { text: '—', cls: 'idle' };
+    if (percent >= 85) return { text: '告警', cls: 'err' };
+    if (percent >= 70) return { text: '注意', cls: 'warn' };
+    return { text: '正常', cls: 'ok' };
+  }
+
+  function setTag(id, value) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (value === true) {
+      el.textContent = '已连接';
+      el.className = 'tag ok';
+    } else if (value === false) {
+      el.textContent = '未连接';
+      el.className = 'tag err';
+    } else {
+      el.textContent = '—';
+      el.className = 'tag idle';
+    }
+  }
+
+  function setService(key, ok) {
+    var dot = document.getElementById('svc-' + key + '-dot');
+    var tag = document.getElementById('svc-' + key + '-tag');
+    var sub = document.getElementById('svc-' + key + '-sub');
+    if (!dot || !tag || !sub) return;
+    if (ok === true) {
+      dot.className = 'dot-status ok';
+      tag.className = 'tag ok';
+      tag.textContent = '在线';
+      sub.textContent = '运行中';
+    } else if (ok === false) {
+      dot.className = 'dot-status err';
+      tag.className = 'tag err';
+      tag.textContent = '离线';
+      sub.textContent = '未运行';
+    } else {
+      dot.className = 'dot-status';
+      tag.className = 'tag idle';
+      tag.textContent = '—';
+      sub.textContent = '—';
+    }
+  }
+
+  function setBar(id, pct) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.style.width = (typeof pct === 'number' && isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 0) + '%';
+  }
+
+  function setRing(id, pct, colorVar) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var p = typeof pct === 'number' && isFinite(pct) ? Math.max(0, Math.min(100, pct)) : 0;
+    var color = colorVar || 'var(--blue)';
+    el.style.background = 'conic-gradient(' + color + ' ' + p + '%, color-mix(in srgb, var(--text) 6%, transparent) 0)';
+  }
+
+
+  function applyCapabilities(cap) {
+    cap = cap || {};
+    var sections = cap.sections || {};
+    var cards = cap.cards || {};
+    var platforms = cap.platforms || {};
+    var serviceCaps = cap.services || {};
+
+    function enabled(obj, key) {
+      return !obj || obj[key] !== false;
+    }
+
+    function setVisible(selector, visible) {
+      document.querySelectorAll(selector).forEach(function (el) {
+        el.setAttribute('data-hcs-hidden', visible ? 'false' : 'true');
+        el.hidden = !visible;
+      });
+    }
+
+    setVisible('[data-card="ups"]', enabled(cards, 'ups'));
+    setVisible('[data-card="memory"]', enabled(cards, 'memory'));
+    setVisible('[data-card="disk"]', enabled(cards, 'disk'));
+
+    setVisible('[data-platform="telegram"]', enabled(platforms, 'telegram'));
+    setVisible('[data-platform="discord"]', enabled(platforms, 'discord'));
+    setVisible('[data-platform="homeassistant"]', enabled(platforms, 'homeassistant'));
+
+    setVisible('[data-service="hermes"]', enabled(serviceCaps, 'hermes'));
+    setVisible('[data-service="docker"]', enabled(serviceCaps, 'docker'));
+    setVisible('[data-service="crowdsec"]', enabled(serviceCaps, 'crowdsec'));
+    setVisible('[data-service="pipewire"]', enabled(serviceCaps, 'pipewire'));
+    setVisible('[data-service="smb"]', enabled(serviceCaps, 'smb'));
+    setVisible('[data-service="watchdog"]', enabled(serviceCaps, 'watchdog'));
+
+    var anyPlatformVisible = Array.prototype.some.call(
+      document.querySelectorAll('[data-platform]'),
+      function (el) {
+        return el.getAttribute('data-hcs-hidden') !== 'true';
+      }
+    );
+
+    var anyServiceVisible = Array.prototype.some.call(
+      document.querySelectorAll('[data-service]'),
+      function (el) {
+        return el.getAttribute('data-hcs-hidden') !== 'true';
+      }
+    );
+
+    setVisible('[data-section="platforms"]', enabled(sections, 'platforms') && anyPlatformVisible);
+    setVisible('[data-section="services"]', enabled(sections, 'services') && anyServiceVisible);
+    setVisible('[data-section="network"]', enabled(sections, 'network'));
+    setVisible('[data-section="storage"]', enabled(sections, 'storage'));
+    setVisible('[data-section="cpu_temp"]', enabled(sections, 'cpu_temp'));
+    setVisible('[data-section="audio"]', enabled(sections, 'audio'));
+
+    var statusGrid = document.querySelector('.status-grid');
+    if (statusGrid) {
+      var visibleCards = Array.prototype.filter.call(
+        statusGrid.querySelectorAll('[data-card]'),
+        function (el) {
+          return el.getAttribute('data-hcs-hidden') !== 'true';
+        }
+      ).length;
+
+      statusGrid.setAttribute('data-visible-cards', String(Math.max(1, visibleCards)));
+    }
+
+    document.querySelectorAll('.sections .stack').forEach(function (stack) {
+      var visibleChildren = Array.prototype.some.call(stack.children, function (el) {
+        return el.getAttribute('data-hcs-hidden') !== 'true';
+      });
+
+      stack.setAttribute('data-hcs-hidden', visibleChildren ? 'false' : 'true');
+      stack.hidden = !visibleChildren;
+    });
+  }
+
+  function render(d) {
+    applyCapabilities(d.capabilities);
+    setText('uptimeVal', d.uptime);
+
+    var temp = safeTemp(d);
+    setText('cpuTempHero', temp == null ? '—' : Math.round(temp) + '°C');
+    setText('tempNum', temp == null ? '—' : Math.round(temp) + '°C');
+    setBar('tempBar', temp == null ? 0 : temp);
+
+    var load = d.cpu && d.cpu.load_avg ? d.cpu.load_avg : null;
+    setText('loadVal', load && typeof load['1min'] === 'number' ? load['1min'].toFixed(2) : '—');
+    setText('loadSub', load ? [load['1min'], load['5min'], load['15min']].map(function(v){ return typeof v === 'number' ? v.toFixed(2) : '—'; }).join(' · ') : '—');
+
+    var sys = d.system || {};
+    setText('badge-os', sys.os || 'Debian 13');
+    setText('badge-host', (d.badge_host || sys.hostname || d.hostname || 'Host'));
+    setText('badge-ip', (d.badge_ip || sys.local_ip || 'IP'));
+
+    var agent = d.agent || {};
+    setText('agentVersion', agent.version || '—');
+    setText('agentModel', agent.primary_model || '—');
+    setText('agentFallbackModel', agent.fallback_model || '—');
+
+    var platforms = agent.platforms || {};
+    setTag('telegramStatus', platforms.telegram);
+    setTag('discordStatus', platforms.discord);
+    setTag('haStatus', platforms.homeassistant);
+
+    // Hero summary
+    var gatewayOk = agent.gateway_running === true;
+    var capPlatforms = (d.capabilities && d.capabilities.platforms) || {};
+    var platCount = 0;
+    if (platforms.telegram && capPlatforms.telegram !== false) platCount++;
+    if (platforms.discord && capPlatforms.discord !== false) platCount++;
+    if (platforms.homeassistant && capPlatforms.homeassistant !== false) platCount++;
+    setText('heroSummary', (gatewayOk ? '网关正常' : '网关异常') + ' · 已连接 ' + platCount + ' 个平台');
+
+    // Automation fetch
+    loadAutomation();
+
+    var ups = d.ups || {};
+    var upsBattery = typeof ups.battery === 'number' ? Math.round(ups.battery) + '%' : '—';
+    setText('upsBattery', upsBattery);
+    setText('upsModel', ups.model || '—');
+    var upsHealth = document.getElementById('upsHealth');
+    if (upsHealth) {
+      if (typeof ups.battery === 'number') {
+        var cls = ups.battery <= 20 ? 'err' : ups.battery <= 50 ? 'warn' : 'ok';
+        upsHealth.className = 'chip ' + cls;
+        upsHealth.textContent = ups.battery <= 20 ? '偏低' : ups.battery <= 50 ? '注意' : '充足';
+      } else {
+        upsHealth.className = 'chip idle';
+        upsHealth.textContent = '—';
+      }
+    }
+
+    var mem = d.memory || {};
+    setText('memPercent', pctText(mem.percent));
+    setText('memSub', humanGB(mem.used_gb) + ' / ' + humanGB(mem.total_gb));
+    setText('ramPct', pctText(mem.percent));
+    setText('ramSub', humanGB(mem.used_gb) + ' / ' + humanGB(mem.total_gb));
+    setRing('ramRing', mem.percent, 'var(--blue)');
+    var memState = healthClass(mem.percent);
+    var memHealth = document.getElementById('memHealth');
+    if (memHealth) { memHealth.className = 'chip ' + memState.cls; memHealth.textContent = memState.text; }
+
+    var zram = d.zram || {};
+    setText('zramPct', pctText(zram.percent));
+    setText('zramSub', (zram.used_human || '—') + ' / ' + (zram.total_human || '—'));
+    setRing('zramRing', zram.percent, 'var(--purple)');
+
+    var disks = Array.isArray(d.disks) ? d.disks : [];
+    var primaryDisk = disks.find(function(x) { return x && x.mount === '/'; }) || disks[0] || {};
+    setText('diskPercent', pctText(primaryDisk.percent));
+    setText('diskSub', primaryDisk.model || '—');
+    var diskState = healthClass(primaryDisk.percent);
+    var diskHealth = document.getElementById('diskHealth');
+    if (diskHealth) { diskHealth.className = 'chip ' + diskState.cls; diskHealth.textContent = diskState.text; }
+
+    var d1 = disks[0] || {};
+    var d2 = disks[1] || {};
+    setText('disk1Name', d1.model || 'Disk 1');
+    setText('disk1Meta', (typeof d1.used_gb === 'number' ? d1.used_gb.toFixed(1) + ' G' : '—') + ' / ' + (typeof d1.total_gb === 'number' ? d1.total_gb.toFixed(1) + ' G' : '—'));
+    setText('disk1Pct', pctText(d1.percent));
+    setBar('disk1Bar', d1.percent);
+    setText('disk2Name', d2.model || 'Disk 2');
+    setText('disk2Meta', (typeof d2.used_gb === 'number' ? d2.used_gb.toFixed(1) + ' G' : '—') + ' / ' + (typeof d2.total_gb === 'number' ? d2.total_gb.toFixed(1) + ' G' : '—'));
+    setText('disk2Pct', pctText(d2.percent));
+    setBar('disk2Bar', d2.percent);
+
+    var net = d.network || {};
+    updateNetField('wan', net.wan_ip);
+    updateNetField('proxy', net.proxy_ip);
+    updateNetField('gw', net.gateway_ip);
+
+    var bt = d.bluetooth || {};
+    setText('bt-name', bt.name);
+    setText('bt-sub', bt.connected === true ? '已连接' : bt.paired === true ? '已配对 · 未连接' : bt.paired === false ? '未配对' : '—');
+
+    var mpv = d.mpv || {};
+    if (mpv.playing === true) {
+      setText('mpv-status', '播放中');
+      setText('mpv-sub', '播放中');
+    } else if (mpv.paused === true) {
+      setText('mpv-status', '已暂停');
+      setText('mpv-sub', '已暂停');
+    } else if (mpv.socket_ok === true) {
+      setText('mpv-status', '接口正常');
+      setText('mpv-sub', '空闲');
+    } else if (mpv.socket_ok === false) {
+      setText('mpv-status', '接口断开');
+      setText('mpv-sub', '断开');
+    } else {
+      setText('mpv-status', '—');
+      setText('mpv-sub', '—');
+    }
+
+    var services = d.services || {};
+    setService('hermes', services.hermes);
+    setService('docker', services.docker);
+    setService('crowdsec', services.crowdsec);
+    setService('pipewire', services.pipewire);
+    setService('smb', services.smb);
+    setService('watchdog', services.watchdog);
+    setText('pw-sub', services.pipewire === true ? '蓝牙音频已启用' : services.pipewire === false ? '未运行' : '—');
+  }
+
+  function fetchData() {
+    var ctrl = new AbortController();
+    var timer = setTimeout(function() { ctrl.abort(); }, 5000);
+    fetch('/api/stats', { signal: ctrl.signal, cache: 'no-store' })
+      .then(function(r) { clearTimeout(timer); if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+      .then(function(d) {
+        lastData = d;
+        window.__lastStats = d;
+        connBanner.classList.remove('show');
+        render(d);
+      })
+      .catch(function() {
+        clearTimeout(timer);
+        connBanner.classList.add('show');
+        if (lastData) render(lastData);
+      });
+  }
+
+  function updateClock() {
+    var t = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+    setText('clock', t);
+    setText('clockMobile', t);
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+  bindNetToggles();
+  fetchData();
+  setInterval(fetchData, 10000);
+  window.addEventListener('pageshow', fetchData);
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'visible') fetchData();
+  });
+})();
+</script>
+
+<script>
+(function () {
+  if (window.__finalPolishV2Loaded) return;
+  window.__finalPolishV2Loaded = true;
+
+  function pad(n) {
+    return String(n).padStart(2, '0');
+  }
+
+  function weekdayCN(d) {
+    return ['周日','周一','周二','周三','周四','周五','周六'][d.getDay()];
+  }
+
+  function relativeText(target, now) {
+    var diffMs = target - now;
+    if (diffMs <= 0) return '即将';
+    var mins = Math.round(diffMs / 60000);
+    if (mins < 60) return mins + 'm';
+    var hours = Math.floor(mins / 60);
+    var rem = mins % 60;
+    if (rem === 0) return hours + 'h';
+    return hours + 'h ' + rem + 'm';
+  }
+
+  function absoluteText(target, now) {
+    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var tomorrow = new Date(today.getTime() + 86400000);
+    var targetDay = new Date(target.getFullYear(), target.getMonth(), target.getDate());
+    var hhmm = pad(target.getHours()) + ':' + pad(target.getMinutes());
+
+    if (targetDay.getTime() === today.getTime()) return '今日 ' + hhmm;
+    if (targetDay.getTime() === tomorrow.getTime()) return '明日 ' + hhmm;
+
+    var diffDays = Math.floor((targetDay - today) / 86400000);
+    if (diffDays >= 0 && diffDays < 7) return weekdayCN(target) + ' ' + hhmm;
+
+    return pad(target.getMonth() + 1) + '-' + pad(target.getDate()) + ' ' + hhmm;
+  }
+
+  function formatNextRun(iso) {
+    if (!iso) return '';
+    var now = new Date();
+    var target = new Date(iso);
+    if (isNaN(target.getTime())) return '';
+    return absoluteText(target, now) + ' · ' + relativeText(target, now);
+  }
+
+  function normalizeName(s) {
+    return (s || '').replace(/\s+/g, '').toLowerCase();
+  }
+
+  function patchAutomationTimes() {
+    fetch('/api/cron-jobs', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var jobs = (data && data.jobs) || [];
+        var byName = {};
+
+        jobs.forEach(function (job) {
+          byName[normalizeName(job.name)] = job;
+        });
+
+        var alias = {};
+
+        document.querySelectorAll('.hero-automation .auto-row').forEach(function (row) {
+          var nameEl = row.querySelector('.auto-name');
+          var nextEl = row.querySelector('.auto-next');
+          if (!nameEl || !nextEl) return;
+
+          var rawName = (nameEl.textContent || '').trim();
+          var key = normalizeName(rawName);
+          var match = byName[key];
+
+          if (!match && alias[key]) {
+            match = byName[normalizeName(alias[key])];
+          }
+
+          if (!match) return;
+          var txt = formatNextRun(match.next_run_at);
+          if (txt) nextEl.textContent = txt;
+        });
+      })
+      .catch(function () {});
+  }
+
+  function eyeSvg(open) {
+    if (open) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    }
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 10.7a3 3 0 0 0 4 4"></path><path d="M9.9 5.2A10.9 10.9 0 0 1 12 5c6.4 0 10 7 10 7a18.7 18.7 0 0 1-4 4.9"></path><path d="M6.6 6.7C3.8 8.6 2 12 2 12a18.1 18.1 0 0 0 6.1 5.5"></path></svg>';
+  }
+
+  function inferVisible(btn, key) {
+    if (window.__netReveal && typeof window.__netReveal[key] === 'boolean') {
+      return !!window.__netReveal[key];
+    }
+    if (btn.getAttribute('aria-pressed') === 'true') return true;
+    if (btn.classList.contains('is-revealed') || btn.classList.contains('revealed')) return true;
+    return false;
+  }
+
+  function patchEyeIcons() {
+    var selectors = [
+      '#net-toggle-wan',
+      '#net-toggle-proxy',
+      '#net-toggle-gw',
+      '.net-ip-toggle[data-net]',
+      '.net-card .net-eye'
+    ];
+
+    document.querySelectorAll(selectors.join(',')).forEach(function (btn, idx) {
+      var key = btn.dataset.net ||
+        (btn.id === 'net-toggle-wan' ? 'wan' :
+         btn.id === 'net-toggle-proxy' ? 'proxy' :
+         btn.id === 'net-toggle-gw' ? 'gw' : ('eye' + idx));
+
+      var visible = inferVisible(btn, key);
+      btn.innerHTML = eyeSvg(visible);
+      btn.setAttribute('title', visible ? '已显示' : '已隐藏');
+      btn.setAttribute('aria-label', visible ? '已显示' : '已隐藏');
+    });
+  }
+
+  function semanticBars() {
+    // Temperature bar: blue / amber / red
+    var tempNum = document.getElementById('temp-num');
+    var tempBar =
+      document.getElementById('temp-fill-bar') ||
+      document.querySelector('.temp-fill');
+
+    if (tempNum && tempBar) {
+      var m = (tempNum.textContent || '').match(/-?\d+(\.\d+)?/);
+      if (m) {
+        var t = parseFloat(m[0]);
+        if (t >= 75) {
+          tempBar.style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
+        } else if (t >= 55) {
+          tempBar.style.background = 'linear-gradient(90deg, #3b82f6, #f59e0b)';
+        } else {
+          tempBar.style.background = 'linear-gradient(90deg, #3b82f6, #14b8a6)';
+        }
+      }
+    }
+
+    // Generic progress: blue / amber / red
+    document.querySelectorAll('.progress > span, .progress-fill, .disk-fill').forEach(function (bar) {
+      var pct = null;
+
+      if (bar.style.width && bar.style.width.indexOf('%') !== -1) {
+        pct = parseFloat(bar.style.width);
+      }
+      if ((pct === null || isNaN(pct)) && bar.dataset && bar.dataset.width) {
+        pct = parseFloat(bar.dataset.width);
+      }
+
+      if (pct === null || isNaN(pct)) return;
+
+      if (pct >= 85) {
+        bar.style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
+      } else if (pct >= 60) {
+        bar.style.background = 'linear-gradient(90deg, #3b82f6, #f59e0b)';
+      } else {
+        bar.style.background = 'linear-gradient(90deg, #3b82f6, #60a5fa)';
+      }
+    });
+  }
+
+  function runFinalPolish() {
+    patchAutomationTimes();
+    patchEyeIcons();
+    semanticBars();
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    runFinalPolish();
+    setTimeout(runFinalPolish, 600);
+    setInterval(runFinalPolish, 60000);
+  });
+})();
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+(function () {
+  if (window.__eyeClickSyncLoaded) return;
+  window.__eyeClickSyncLoaded = true;
+
+  function eyeSvg(open) {
+    if (open) {
+      return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
+    }
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 10.7a3 3 0 0 0 4 4"></path><path d="M9.9 5.2A10.9 10.9 0 0 1 12 5c6.4 0 10 7 10 7a18.7 18.7 0 0 1-4 4.9"></path><path d="M6.6 6.7C3.8 8.6 2 12 2 12a18.1 18.1 0 0 0 6.1 5.5"></path></svg>';
+  }
+
+  function syncOne(btn) {
+    var key = btn.dataset.net ||
+      (btn.id === 'net-toggle-wan' ? 'wan' :
+       btn.id === 'net-toggle-proxy' ? 'proxy' :
+       btn.id === 'net-toggle-gw' ? 'gw' : '');
+    var visible = false;
+    if (window.__netReveal && typeof window.__netReveal[key] === 'boolean') {
+      visible = !!window.__netReveal[key];
+    } else if (btn.getAttribute('aria-pressed') === 'true' || btn.classList.contains('revealed')) {
+      visible = true;
+    }
+    btn.innerHTML = eyeSvg(visible);
+    btn.setAttribute('title', visible ? '已显示' : '已隐藏');
+    btn.setAttribute('aria-label', visible ? '已显示' : '已隐藏');
+  }
+
+  function syncAll() {
+    document.querySelectorAll('#net-toggle-wan, #net-toggle-proxy, #net-toggle-gw, .net-ip-toggle[data-net], .net-card .net-eye')
+      .forEach(syncOne);
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    syncAll();
+    setTimeout(syncAll, 300);
+    document.body.addEventListener('click', function (e) {
+      var btn = e.target.closest('#net-toggle-wan, #net-toggle-proxy, #net-toggle-gw, .net-ip-toggle[data-net], .net-card .net-eye');
+      if (!btn) return;
+      setTimeout(syncAll, 30);
+      setTimeout(syncAll, 160);
+    }, true);
+  });
+})();
+</script>
+
+
+<script>
+/* build-meta front-end only */
+(function () {
+  if (window.__buildMetaFrontendOnlyLoaded) return;
+  window.__buildMetaFrontendOnlyLoaded = true;
+
+  function setTextSafe(id, value) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value == null || value === '' ? '—' : value;
+  }
+
+  function loadBuildMeta() {
+    fetch('/build-meta.json', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (meta) {
+        if (!meta) return;
+
+        // Prefer dynamic values from /api/stats; only fall back to build-meta when missing
+        var versionEl = document.getElementById('agentVersion');
+        if (!versionEl || !versionEl.textContent || versionEl.textContent.trim() === '—') {
+          setTextSafe('agentVersion', meta.version || '—');
+        }
+
+        setTextSafe('agentBuildDate', meta.build_date || '—');
+        setTextSafe('agentCommit', meta.commit || '—');
+      })
+      .catch(function () {});
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    loadBuildMeta();
+    setTimeout(loadBuildMeta, 500);
+  });
+})();
+</script>
+
+
+  <div class="settings-overlay" id="settingsOverlay" hidden></div>
+<aside class="settings-drawer" id="settingsDrawer" aria-hidden="true">
+  <div class="settings-drawer__head">
+    <div>
+      <h3 class="settings-drawer__title">设置</h3>
+    </div>
+    <button class="settings-close" id="settingsClose" type="button" aria-label="关闭设置">×</button>
+  </div>
+  <div class="settings-drawer__body">
+    <div class="settings-pages">
+      <div class="settings-page" id="settingsPageHome">
+        <div class="settings-home">
+          <div class="settings-home__intro">
+            <div class="settings-home__sub">管理此控制面板的外观、显示与语言。</div>
+          </div>
+
+          <button class="settings-nav-item" type="button" data-settings-nav="appearance">
+            <div class="settings-nav-item__left">
+              <div class="settings-nav-item__title">外观</div>
+              <div class="settings-nav-item__desc">主题、材质与界面光效</div>
+            </div>
+            <div class="settings-nav-item__right">
+              <span class="settings-nav-item__value" id="settingsAppearanceSummary">跟随系统</span>
+              <span class="settings-nav-item__chevron">›</span>
+            </div>
+          </button>
+
+          <button class="settings-nav-item" type="button" data-settings-nav="display">
+            <div class="settings-nav-item__left">
+              <div class="settings-nav-item__title">显示</div>
+              <div class="settings-nav-item__desc">动效、透明材质与可读性</div>
+            </div>
+            <div class="settings-nav-item__right">
+              <span class="settings-nav-item__value" id="settingsDisplaySummary">标准</span>
+              <span class="settings-nav-item__chevron">›</span>
+            </div>
+          </button>
+
+          <button class="settings-nav-item" type="button" data-settings-nav="language">
+            <div class="settings-nav-item__left">
+              <div class="settings-nav-item__title">语言</div>
+              <div class="settings-nav-item__desc">切换界面显示语言</div>
+            </div>
+            <div class="settings-nav-item__right">
+              <span class="settings-nav-item__value" id="settingsLanguageSummary">跟随浏览器</span>
+              <span class="settings-nav-item__chevron">›</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <div class="settings-page" id="settingsPageAppearance" hidden>
+        <div class="settings-subpage">
+          <button class="settings-back" type="button" id="settingsBackToHome" aria-label="返回设置首页">
+            <span class="settings-back__chevron" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7.5 2.5L4.5 6L7.5 9.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>返回</span>
+          </button>
+
+          <div class="settings-subpage__intro">
+            <div class="settings-subpage__title">外观</div>
+            <div class="settings-subpage__sub">调整主题、材质与界面光效。</div>
+          </div>
+
+          <section class="settings-detail-card">
+            <div class="settings-detail-card__head">
+              <div>
+                <div class="settings-detail-card__title">主题</div>
+                <div class="settings-detail-card__desc">选择浅色、深色或跟随系统。</div>
+              </div>
+              <div class="settings-detail-card__value" id="settingsThemeModeCurrent">跟随系统</div>
+            </div>
+
+            <div class="settings-segment" role="radiogroup" aria-label="主题">
+              <button class="settings-segment__option" type="button" data-theme-choice="system">跟随系统</button>
+              <button class="settings-segment__option" type="button" data-theme-choice="light">浅色</button>
+              <button class="settings-segment__option" type="button" data-theme-choice="dark">深色</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="settings-page" id="settingsPageDisplay" hidden>
+        <div class="settings-subpage">
+          <button class="settings-back" type="button" id="settingsBackFromDisplay" aria-label="返回设置首页">
+            <span class="settings-back__chevron" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7.5 2.5L4.5 6L7.5 9.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>返回</span>
+          </button>
+
+          <div class="settings-subpage__intro">
+            <div class="settings-subpage__title">显示</div>
+            <div class="settings-subpage__sub">调整动效、透明材质与可读性。</div>
+          </div>
+
+          <section class="settings-detail-card">
+            <div class="settings-detail-card__head">
+              <div>
+                <div class="settings-detail-card__title">透明材质</div>
+                <div class="settings-detail-card__desc">控制界面玻璃层次与材质强度。</div>
+              </div>
+              <div class="settings-detail-card__value" id="settingsTransparencyCurrent">标准</div>
+            </div>
+
+            <div class="settings-segment settings-segment--2" role="radiogroup" aria-label="透明材质">
+              <button class="settings-segment__option" type="button" data-transparency-choice="glass">标准</button>
+              <button class="settings-segment__option" type="button" data-transparency-choice="soft">柔和</button>
+            </div>
+          </section>
+
+          <section class="settings-detail-card">
+            <div class="settings-detail-card__head">
+              <div>
+                <div class="settings-detail-card__title">动态效果</div>
+                <div class="settings-detail-card__desc">控制抽屉、切页与界面反馈的动态强度。</div>
+              </div>
+              <div class="settings-detail-card__value" id="settingsMotionCurrent">标准</div>
+            </div>
+
+            <div class="settings-segment settings-segment--2" role="radiogroup" aria-label="动态效果">
+              <button class="settings-segment__option" type="button" data-motion-choice="full">标准</button>
+              <button class="settings-segment__option" type="button" data-motion-choice="reduced">减少</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <div class="settings-page" id="settingsPageLanguage" hidden>
+        <div class="settings-subpage">
+          <button class="settings-back" type="button" id="settingsBackFromLanguage" aria-label="返回设置首页">
+            <span class="settings-back__chevron" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M7.5 2.5L4.5 6L7.5 9.5" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span>返回</span>
+          </button>
+
+          <div class="settings-subpage__intro">
+            <div class="settings-subpage__title">界面语言</div>
+            <div class="settings-subpage__sub">设置界面的显示语言。</div>
+          </div>
+
+          <section class="settings-detail-card">
+            <div class="settings-detail-card__head">
+              <div>
+                <div class="settings-detail-card__title">显示语言</div>
+                <div class="settings-detail-card__desc">该设置会作用于整个界面。</div>
+              </div>
+              <div class="settings-detail-card__value" id="settingsLanguageCurrent">跟随浏览器</div>
+            </div>
+
+            <div class="settings-segment" role="radiogroup" aria-label="语言">
+              <button class="settings-segment__option" type="button" data-language-choice="system">跟随浏览器</button>
+              <button class="settings-segment__option" type="button" data-language-choice="en">English</button>
+              <button class="settings-segment__option" type="button" data-language-choice="zh-CN">简体中文</button>
+            </div>
+
+            <div class="settings-note-soft" style="margin-top: 14px;">
+              <div class="settings-note-soft__desc">跟随浏览器时，将优先使用浏览器语言。</div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+
+<script>
+/* settings entry step 1 */
+(function () {
+  if (window.__settingsStep1Loaded) return;
+  window.__settingsStep1Loaded = true;
+
+  var overlay = document.getElementById('settingsOverlay');
+  var drawer = document.getElementById('settingsDrawer');
+  var openers = [
+    document.getElementById('settingsTriggerDesktop'),
+    document.getElementById('settingsTriggerMobile')
+  ].filter(Boolean);
+  var closeBtn = document.getElementById('settingsClose');
+
+  function openSettings() {
+    if (!overlay || !drawer) return;
+    overlay.hidden = false;
+    requestAnimationFrame(function () {
+      overlay.classList.add('show');
+      drawer.classList.add('show');
+      drawer.setAttribute('aria-hidden', 'false');
+    });
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('settings-open');
+  }
+
+  function closeSettings() {
+    if (!overlay || !drawer) return;
+    overlay.classList.remove('show');
+    drawer.classList.remove('show');
+    drawer.setAttribute('aria-hidden', 'true');
+    window.setTimeout(function () {
+      overlay.hidden = true;
+    }, 240);
+    document.body.style.overflow = '';
+    document.body.classList.remove('settings-open');
+  }
+
+  openers.forEach(function (btn) {
+    btn.addEventListener('click', openSettings);
+  });
+
+  if (closeBtn) closeBtn.addEventListener('click', closeSettings);
+  if (overlay) overlay.addEventListener('click', closeSettings);
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeSettings();
+  });
+})();
+</script>
+
+
+<script>
+/* settings step 2: appearance subpage + theme mode */
+(function () {
+  if (window.__settingsStep2Loaded) return;
+  window.__settingsStep2Loaded = true;
+
+  var THEME_KEY = 'hermes-dashboard-theme';
+  var root = document.documentElement;
+  var mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+  var pageHome = document.getElementById('settingsPageHome');
+  var pageAppearance = document.getElementById('settingsPageAppearance');
+  var navAppearance = document.querySelector('[data-settings-nav="appearance"]');
+  var backBtn = document.getElementById('settingsBackToHome');
+  var appearanceSummary = document.getElementById('settingsAppearanceSummary');
+  var themeCurrent = document.getElementById('settingsThemeModeCurrent');
+  var themeButtons = Array.prototype.slice.call(document.querySelectorAll('[data-theme-choice]'));
+  var openers = [
+    document.getElementById('settingsTriggerDesktop'),
+    document.getElementById('settingsTriggerMobile')
+  ].filter(Boolean);
+
+  function resolveTheme() {
+    var saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark') return saved;
+    return mediaQuery.matches ? 'dark' : 'light';
+  }
+
+  function applyResolvedTheme() {
+    root.setAttribute('data-theme', resolveTheme());
+  }
+
+  function themeLabel(choice) {
+    if (choice === 'light') return '浅色';
+    if (choice === 'dark') return '深色';
+    return '跟随系统';
+  }
+
+  function currentChoice() {
+    var saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark' || saved === 'system') return saved;
+    return 'system';
+  }
+
+  function syncThemeUI() {
+    var choice = currentChoice();
+    var label = themeLabel(choice);
+
+    if (appearanceSummary) appearanceSummary.textContent = label;
+    if (themeCurrent) themeCurrent.textContent = label;
+
+    themeButtons.forEach(function (btn) {
+      var active = btn.getAttribute('data-theme-choice') === choice;
+      btn.classList.toggle('is-selected', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function showHomePage() {
+    if (pageHome) pageHome.hidden = false;
+    if (pageAppearance) pageAppearance.hidden = true;
+  }
+
+  function showAppearancePage() {
+    if (pageHome) pageHome.hidden = true;
+    if (pageAppearance) pageAppearance.hidden = false;
+    syncThemeUI();
+  }
+
+  if (navAppearance) {
+    navAppearance.addEventListener('click', function () {
+      showAppearancePage();
+    });
+  }
+
+  if (backBtn) {
+    backBtn.addEventListener('click', function () {
+      showHomePage();
+    });
+  }
+
+  themeButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var choice = btn.getAttribute('data-theme-choice') || 'system';
+      localStorage.setItem(THEME_KEY, choice);
+      applyResolvedTheme();
+      syncThemeUI();
+    });
+  });
+
+  openers.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      showHomePage();
+      syncThemeUI();
+    });
+  });
+
+  try {
+    mediaQuery.addEventListener('change', function () {
+      if (currentChoice() === 'system') {
+        applyResolvedTheme();
+        syncThemeUI();
+      }
+    });
+  } catch (_) {
+    mediaQuery.addListener(function () {
+      if (currentChoice() === 'system') {
+        applyResolvedTheme();
+        syncThemeUI();
+      }
+    });
+  }
+
+  showHomePage();
+  syncThemeUI();
+})();
+</script>
+
+<script>
+/* settings step 4: display subpage rebuilt for macOS-like controls */
+(function () {
+  if (window.__settingsStep4Loaded) return;
+  window.__settingsStep4Loaded = true;
+
+  var MOTION_KEY = 'hermes-dashboard-motion';
+  var TRANSPARENCY_KEY = 'hermes-dashboard-transparency';
+  var TEXT_SIZE_KEY = 'hermes-dashboard-text-size';
+
+  var root = document.documentElement;
+  var pageHome = document.getElementById('settingsPageHome');
+  var pageAppearance = document.getElementById('settingsPageAppearance');
+  var pageDisplay = document.getElementById('settingsPageDisplay');
+
+  var navDisplay = document.querySelector('[data-settings-nav="display"]');
+  var backFromDisplay = document.getElementById('settingsBackFromDisplay');
+  var displaySummary = document.getElementById('settingsDisplaySummary');
+
+  var motionCurrent = document.getElementById('settingsMotionCurrent');
+  var transparencyCurrent = document.getElementById('settingsTransparencyCurrent');
+  var textSizeCurrent = document.getElementById('settingsTextSizeCurrent');
+
+  var motionButtons = Array.prototype.slice.call(document.querySelectorAll('[data-motion-choice]'));
+  var transparencyButtons = Array.prototype.slice.call(document.querySelectorAll('[data-transparency-choice]'));
+  var textSizeButtons = Array.prototype.slice.call(document.querySelectorAll('[data-text-size-choice]'));
+
+  function readMotion() {
+    return localStorage.getItem(MOTION_KEY) === 'reduced' ? 'reduced' : 'full';
+  }
+
+  function readTransparency() {
+    var saved = localStorage.getItem(TRANSPARENCY_KEY);
+    return saved === 'soft' ? 'soft' : 'glass';
+  }
+
+  function readTextSize() {
+    return localStorage.getItem(TEXT_SIZE_KEY) === 'large' ? 'large' : 'standard';
+  }
+
+  function motionLabel(v) {
+    return v === 'reduced' ? '减少' : '标准';
+  }
+
+  function transparencyLabel(v) {
+    return v === 'soft' ? '柔和' : '标准';
+  }
+
+  function textSizeLabel(v) {
+    return v === 'large' ? '稍大' : '标准';
+  }
+
+  function displaySummaryLabel() {
+    return readTransparency() === 'soft' ? '柔和' : '标准';
+  }
+
+  function syncButtons(buttons, attr, currentValue) {
+    buttons.forEach(function (btn) {
+      var active = btn.getAttribute(attr) === currentValue;
+      btn.classList.toggle('is-selected', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function applyDisplayUI() {
+    var motion = readMotion();
+    var transparency = readTransparency();
+    var textSize = readTextSize();
+
+    root.setAttribute('data-motion', motion);
+    root.setAttribute('data-transparency', transparency);
+    root.setAttribute('data-text-size', textSize);
+
+    if (motionCurrent) motionCurrent.textContent = motionLabel(motion);
+    if (transparencyCurrent) transparencyCurrent.textContent = transparencyLabel(transparency);
+    if (textSizeCurrent) textSizeCurrent.textContent = textSizeLabel(textSize);
+    if (displaySummary) displaySummary.textContent = displaySummaryLabel();
+
+    syncButtons(motionButtons, 'data-motion-choice', motion);
+    syncButtons(transparencyButtons, 'data-transparency-choice', transparency);
+    syncButtons(textSizeButtons, 'data-text-size-choice', textSize);
+  }
+
+  function hideAllPages() {
+    if (pageHome) pageHome.hidden = true;
+    if (pageAppearance) pageAppearance.hidden = true;
+    if (pageDisplay) pageDisplay.hidden = true;
+  }
+
+  function showDisplayPage() {
+    hideAllPages();
+    if (pageDisplay) pageDisplay.hidden = false;
+    applyDisplayUI();
+  }
+
+  function showHomePageSafe() {
+    hideAllPages();
+    if (pageHome) pageHome.hidden = false;
+    applyDisplayUI();
+  }
+
+  if (navDisplay) {
+    navDisplay.addEventListener('click', function () {
+      showDisplayPage();
+    });
+  }
+
+  if (backFromDisplay) {
+    backFromDisplay.addEventListener('click', function () {
+      showHomePageSafe();
+    });
+  }
+
+  motionButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var value = btn.getAttribute('data-motion-choice') === 'reduced' ? 'reduced' : 'full';
+      localStorage.setItem(MOTION_KEY, value);
+      applyDisplayUI();
+    });
+  });
+
+  transparencyButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var value = btn.getAttribute('data-transparency-choice') === 'soft' ? 'soft' : 'glass';
+      localStorage.setItem(TRANSPARENCY_KEY, value);
+      applyDisplayUI();
+    });
+  });
+
+  textSizeButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var value = btn.getAttribute('data-text-size-choice') === 'large' ? 'large' : 'standard';
+      localStorage.setItem(TEXT_SIZE_KEY, value);
+      applyDisplayUI();
+    });
+  });
+
+  applyDisplayUI();
+})();
+</script>
+
+<script>
+/* settings icon apple redraw */
+(function () {
+  if (window.__settingsIconAppleRedraw) return;
+  window.__settingsIconAppleRedraw = true;
+
+  var gearSvg = `
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M10.63 2.25h2.74c.43 0 .81.29.92.71l.42 1.56c.42.12.83.29 1.22.5l1.4-.82a.96.96 0 0 1 1.16.14l1.94 1.94c.3.3.36.76.14 1.12l-.83 1.44c.2.38.37.78.5 1.2l1.58.43c.42.11.7.49.7.92v2.74c0 .43-.28.81-.7.92l-1.58.43c-.13.42-.3.82-.5 1.2l.83 1.44c.22.36.16.82-.14 1.12l-1.94 1.94a.96.96 0 0 1-1.16.14l-1.4-.82c-.39.21-.8.38-1.22.5l-.42 1.56a.95.95 0 0 1-.92.71h-2.74a.95.95 0 0 1-.92-.71l-.42-1.56a7.15 7.15 0 0 1-1.22-.5l-1.4.82a.96.96 0 0 1-1.16-.14l-1.94-1.94a.95.95 0 0 1-.14-1.12l.83-1.44a7 7 0 0 1-.5-1.2l-1.58-.43a.95.95 0 0 1-.7-.92v-2.74c0-.43.28-.81.7-.92l1.58-.43c.13-.42.3-.82.5-1.2l-.83-1.44a.95.95 0 0 1 .14-1.12l1.94-1.94a.96.96 0 0 1 1.16-.14l1.4.82c.39-.21.8-.38 1.22-.5l.42-1.56c.11-.42.49-.71.92-.71Zm1.37 5.44a4.31 4.31 0 1 0 0 8.62a4.31 4.31 0 0 0 0-8.62Zm0 1.68a2.63 2.63 0 1 0 0 5.26a2.63 2.63 0 0 0 0-5.26Z"></path>
+    </svg>
+  `;
+
+  ['settingsTriggerDesktop', 'settingsTriggerMobile'].forEach(function (id) {
+    var btn = document.getElementById(id);
+    if (btn) btn.innerHTML = gearSvg;
+  });
+})();
+</script>
+
+
+<script>
+/* ===== mobile settings opener clean enhancer ===== */
+(function () {
+  if (window.__mobileSettingsCleanEnhancerLoaded) return;
+  window.__mobileSettingsCleanEnhancerLoaded = true;
+
+  function openSettingsImmediate(ev) {
+    if (window.innerWidth > 700) return;
+    if (ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      ev.stopImmediatePropagation && ev.stopImmediatePropagation();
+    }
+    var overlay = document.getElementById('settingsOverlay');
+    var drawer = document.getElementById('settingsDrawer');
+    if (!overlay || !drawer) return;
+    overlay.hidden = false;
+    overlay.classList.add('show');
+    drawer.classList.add('show');
+    drawer.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    document.body.classList.add('settings-open');
+  }
+
+  function bindMobileTrigger() {
+    var btn = document.getElementById('settingsTriggerMobile');
+    if (!btn || btn.__cleanEnhanced) return;
+    btn.__cleanEnhanced = true;
+    btn.addEventListener('click', openSettingsImmediate, { passive: false, capture: true });
+    btn.addEventListener('touchend', openSettingsImmediate, { passive: false, capture: true });
+    btn.addEventListener('pointerup', openSettingsImmediate, { passive: false, capture: true });
+  }
+
+  function boot() {
+    if (window.innerWidth <= 700) bindMobileTrigger();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+
+  window.addEventListener('pageshow', boot);
+})();
+</script>
+
+
+
+<script>
+/* ===== public config bridge ===== */
+(function () {
+  function setTextIfPresent(id, value) {
+    var el = document.getElementById(id);
+    if (!el || value == null || value === '') return;
+    el.textContent = value;
+  }
+
+  function apply(cfg) {
+    if (!cfg || typeof cfg !== 'object') return;
+    setTextIfPresent('brandEyebrowDesktop', cfg.brand_eyebrow_desktop || 'Hermes Agent');
+    setTextIfPresent('brandTitleDesktop', cfg.brand_title_desktop || 'Dashboard');
+    setTextIfPresent('brandEyebrowMobile', cfg.brand_eyebrow_mobile || 'HERMES AGENT');
+    setTextIfPresent('brandTitleMobile', cfg.brand_title_mobile || 'Dashboard');
+    setTextIfPresent('footerBrand', cfg.footer_brand || 'Hermes Agent');
+  }
+
+  function loadAndApply() {
+    fetch('/api/public-config', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) { apply(cfg); })
+      .catch(function () {});
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadAndApply, { once: true });
+  } else {
+    loadAndApply();
+  }
+})();
+</script>
+
+
+
+
+
+
+<script>
+/* settings page router + server language switch */
+(function () {
+  if (window.__settingsRouterStableLoaded) return;
+  window.__settingsRouterStableLoaded = true;
+
+  function byId(id) { return document.getElementById(id); }
+
+  var pageHome = byId('settingsPageHome');
+  var pageAppearance = byId('settingsPageAppearance');
+  var pageDisplay = byId('settingsPageDisplay');
+  var pageLanguage = byId('settingsPageLanguage');
+
+  var navAppearance = document.querySelector('[data-settings-nav="appearance"]');
+  var navDisplay = document.querySelector('[data-settings-nav="display"]');
+  var navLanguage = document.querySelector('[data-settings-nav="language"]');
+
+  var backAppearance = byId('settingsBackToHome');
+  var backDisplay = byId('settingsBackFromDisplay');
+  var backLanguage = byId('settingsBackFromLanguage');
+
+  var summaryEl = byId('settingsLanguageSummary');
+  var currentEl = byId('settingsLanguageCurrent');
+  var languageButtons = Array.prototype.slice.call(document.querySelectorAll('[data-language-choice]'));
+
+  var openers = [
+    byId('settingsTriggerDesktop'),
+    byId('settingsTriggerMobile')
+  ].filter(Boolean);
+
+  function hideAllPages() {
+    if (pageHome) pageHome.hidden = true;
+    if (pageAppearance) pageAppearance.hidden = true;
+    if (pageDisplay) pageDisplay.hidden = true;
+    if (pageLanguage) pageLanguage.hidden = true;
+  }
+
+  function showHomePage() {
+    hideAllPages();
+    if (pageHome) pageHome.hidden = false;
+  }
+
+  function showAppearancePage() {
+    hideAllPages();
+    if (pageAppearance) pageAppearance.hidden = false;
+  }
+
+  function showDisplayPage() {
+    hideAllPages();
+    if (pageDisplay) pageDisplay.hidden = false;
+  }
+
+  function showLanguagePage() {
+    hideAllPages();
+    if (pageLanguage) pageLanguage.hidden = false;
+    syncLanguageUI();
+  }
+
+  function currentChoice() {
+    var params = new URLSearchParams(window.location.search);
+    var q = params.get('lang');
+    if (q === 'en' || q === 'zh-CN' || q === 'system') return q;
+
+    var cookieMatch = document.cookie.match(/(?:^|;\s*)hcs_lang=([^;]+)/);
+    if (cookieMatch && cookieMatch[1]) {
+      var v = decodeURIComponent(cookieMatch[1]);
+      if (v === 'en' || v === 'zh-CN') return v;
+    }
+    return 'system';
+  }
+
+  function labelFor(choice) {
+    var lang = (document.documentElement.lang || 'en').toLowerCase();
+    var zh = lang.indexOf('zh') === 0;
+    if (choice === 'en') return 'English';
+    if (choice === 'zh-CN') return '简体中文';
+    return zh ? '跟随浏览器' : 'Follow Browser';
+  }
+
+  function syncLanguageUI() {
+    var choice = currentChoice();
+    if (summaryEl) summaryEl.textContent = labelFor(choice);
+    if (currentEl) currentEl.textContent = labelFor(choice);
+
+    languageButtons.forEach(function (btn) {
+      var active = btn.getAttribute('data-language-choice') === choice;
+      btn.classList.toggle('active', active);
+      btn.classList.toggle('is-selected', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+  }
+
+  function go(choice) {
+    var url = new URL(window.location.href);
+    url.searchParams.set('lang', choice);
+    window.location.assign(url.toString());
+  }
+
+  function intercept(el, handler) {
+    if (!el) return;
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      handler();
+    }, true);
+  }
+
+  intercept(navAppearance, showAppearancePage);
+  intercept(navDisplay, showDisplayPage);
+  intercept(navLanguage, showLanguagePage);
+
+  intercept(backAppearance, showHomePage);
+  intercept(backDisplay, showHomePage);
+  intercept(backLanguage, showHomePage);
+
+  languageButtons.forEach(function (btn) {
+    btn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      var choice = btn.getAttribute('data-language-choice');
+      if (!choice) return;
+      go(choice);
+    }, true);
+  });
+
+  openers.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      window.setTimeout(function () {
+        showHomePage();
+        syncLanguageUI();
+      }, 0);
+    });
+  });
+
+  var closeBtn = byId('settingsClose');
+  if (closeBtn) closeBtn.addEventListener('click', showHomePage);
+
+  var overlay = byId('settingsOverlay');
+  if (overlay) overlay.addEventListener('click', showHomePage);
+
+  function boot() {
+    showHomePage();
+    syncLanguageUI();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+
+  window.addEventListener('pageshow', boot);
+})();
+</script>
+
+</body>
+</html>

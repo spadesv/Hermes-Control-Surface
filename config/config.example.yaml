@@ -1,0 +1,155 @@
+# ==========================================================
+# Hermes Control Surface - Public Example Config
+# ----------------------------------------------------------
+# This template is safe to publish.
+# Copy it to config/config.yaml for your private runtime config.
+#
+# Keep real IP addresses, UPS targets, Bluetooth MAC addresses,
+# private paths, tokens, and local-only command strings out of
+# this public example file.
+# ==========================================================
+
+site:
+  # Browser tab / window title
+  page_title: Hermes Control Surface
+
+  # Local service port used by the example systemd unit
+  port: 9091
+
+frontend:
+  # Top status badges.
+  # Empty string = auto-detect when possible.
+  # Non-empty value = manually override the displayed text.
+  badge_os: ""
+  badge_host: ""
+  badge_ip: ""
+
+  # Brand text shown in the desktop and mobile headers.
+  # The running page is rendered from YAML by server.py.
+  brand_eyebrow_desktop: Hermes Agent
+  brand_title_desktop: Control Surface
+  brand_eyebrow_mobile: HERMES AGENT
+  brand_title_mobile: Control Surface
+
+  # Footer project brand
+  footer_brand: Hermes Agent
+
+build:
+  # Fallback values only.
+  # Real git / pyproject values take priority when available.
+  version: 0.1.0
+  build_date: "2026-04-25"
+  commit: v0.1.0
+  channel: release
+
+agent:
+  # Hermes base path
+  home: ~/.hermes
+
+  # Relative paths under the Hermes home
+  repo_relpath: hermes-agent
+  pyproject_relpath: hermes-agent/pyproject.toml
+  config_relpath: config.yaml
+  gateway_state_relpath: gateway_state.json
+  cron_jobs_file: ~/.hermes/cron/jobs.json
+
+network:
+  # Enable / disable dashboard network integration.
+  enabled: false
+
+  # provider options:
+  # - dual_http_probe: read WAN / proxy IP through HTTP probes
+  # - command: run trusted local administrator commands
+  # - manual: use manual_wan / manual_proxy values below
+  provider: dual_http_probe
+
+  # Probe cache seconds. Invalid values fall back safely.
+  cache_seconds: 300
+
+  # Dashboard gateway display value. Leave empty if not needed.
+  gateway_ip: ""
+
+  # Used when provider = dual_http_probe
+  direct_probe_url: https://example.com/direct-ip
+  proxy_probe_url: https://example.com/proxy-ip
+
+  # Used when provider = command.
+  # These strings are trusted local commands. Do not accept untrusted input here.
+  command_wan: ""
+  command_proxy: ""
+
+  # Used when provider = manual
+  manual_wan: Offline
+  manual_proxy: NONE
+
+system:
+  # Used only if CPU model auto-detection fails
+  cpu_model_fallback: Unknown CPU
+
+services:
+  # Service names for local detection.
+  # The dashboard checks only these allow-listed services; it does not scan
+  # every systemd unit on the host.
+  hermes: hermes-gateway
+  crowdsec: crowdsec
+  docker: docker
+  watchdog: watchdog
+  smb: smbd
+  pipewire_system: bt-music.service
+  pipewire_user: bt-music.service
+
+ups:
+  # Optional UPS integration
+  enabled: false
+  target: ""
+
+bluetooth:
+  # Optional Bluetooth speaker integration
+  mac: ""
+  default_name: Bluetooth Speaker
+
+mpv:
+  # Optional MPV integration. Leave empty to keep the audio block hidden in auto mode.
+  socket: ""
+  user: ""
+  # Optional user-session overrides. Leave empty to derive from mpv.user when needed.
+  runtime_dir: ""
+  dbus_session_bus_address: ""
+
+# Optional display-only mapping for cron job names.
+# Left side  = real cron job name
+# Right side = display name in the dashboard
+cron_display_names: {}
+
+dashboard:
+  # Display policy:
+  # - auto: show when related config/data exists
+  # - show: force show
+  # - hide: force hide
+  sections:
+    platforms: auto
+    services: auto
+    network: auto
+    storage: show
+    cpu_temp: show
+    audio: auto
+
+  cards:
+    ups: auto
+    memory: show
+    disk: show
+
+  platforms:
+    telegram: auto
+    discord: auto
+    homeassistant: auto
+
+  # Service rows are display-controlled here.
+  # The backend only checks services named in the top-level services: block.
+  services:
+    hermes: show
+    docker: hide
+    crowdsec: hide
+    pipewire: hide
+    smb: hide
+    watchdog: hide
