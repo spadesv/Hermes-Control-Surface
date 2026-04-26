@@ -1,9 +1,6 @@
 import os
-from pathlib import Path
 
-import yaml
-
-from app.config_loader import cfg_nonempty, cfg_str
+from app.config_loader import cfg_nonempty, cfg_section, cfg_str
 from app.utils import run_cmd_args
 
 
@@ -19,15 +16,6 @@ SERVICE_LABELS = {
     "watchdog": "Watchdog",
 }
 
-SERVICE_DEFAULT_UNITS = {
-    "hermes": "hermes-gateway",
-    "docker": "docker",
-    "crowdsec": "crowdsec",
-    "smb": "smbd",
-    "watchdog": "watchdog",
-}
-
-
 def check_svc(name):
     name = str(name or "").strip()
     if not name:
@@ -35,29 +23,8 @@ def check_svc(name):
     return run_cmd_args(["systemctl", "is-active", name], timeout=2) == "active"
 
 
-def _load_yaml_config() -> dict:
-    """Load runtime config so service keys can be enumerated dynamically.
-
-    The dashboard still uses cfg_* helpers for individual values. This raw read
-    only solves the old hardcoded-service-list problem.
-    """
-    for path in (Path.cwd() / "config" / "config.yaml", Path.cwd() / "config" / "config.example.yaml"):
-        try:
-            if path.exists():
-                data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-                return data if isinstance(data, dict) else {}
-        except Exception:
-            return {}
-    return {}
-
-
-def _config_section(name: str) -> dict:
-    section = (_load_yaml_config().get(name) or {})
-    return section if isinstance(section, dict) else {}
-
-
 def _raw_services_config() -> dict:
-    return _config_section("services")
+    return cfg_section("services", default={})
 
 
 def _clean_unit(value) -> str:
@@ -95,7 +62,7 @@ def _humanize_service_key(key: str) -> str:
 
 
 def _service_label(key: str) -> str:
-    labels = _config_section("service_labels")
+    labels = cfg_section("service_labels", default={})
     label = labels.get(key)
     if isinstance(label, str) and label.strip():
         return label.strip()
@@ -123,10 +90,9 @@ def get_service_specs() -> list[dict]:
             configured = bool(pipewire_system or pipewire_user or pipewire_plain)
             unit = pipewire_plain or pipewire_system or pipewire_user or ""
         else:
-            default_unit = SERVICE_DEFAULT_UNITS.get(key, "")
             configured_raw = _clean_unit(raw_services.get(key, ""))
             configured = bool(configured_raw)
-            unit = cfg_nonempty("services", key, default=default_unit)
+            unit = configured_raw
 
         specs.append({
             "key": key,

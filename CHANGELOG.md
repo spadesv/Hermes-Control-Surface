@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.1 - Dynamic rows and release hardening
+
+This release focuses on making the public package safer and more extensible.
+
+It includes:
+
+- Dynamic service rows driven by configured `services:` keys
+- Dynamic platform rows driven by Hermes gateway state
+- Safer `/api/stats` collector isolation so one failing module does not break the whole API
+- Cleaner public defaults and corrected Hermes gateway service documentation
+- More robust config-section access shared through `config_loader`
+- Broader disk, temperature, UPS, and Bluetooth status compatibility
+- Documentation and package references updated for `v0.1.1`
+
 ## v0.1.0 - Initial public release
 
 This is the first public release of Hermes Control Surface.

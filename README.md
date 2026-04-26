@@ -171,7 +171,7 @@ This keeps the dashboard predictable.
 Hermes Control Surface is an independent local dashboard.  
 It is not an official Hermes Agent release.
 
-This is an early `v0.1.0` release. Thoughtful fixes, careful polish, and practical ideas are welcome.
+This is an early `v0.1.1` release with dynamic service/platform rows and safer public defaults. Thoughtful fixes, careful polish, and practical ideas are welcome.
 
 ## License
 

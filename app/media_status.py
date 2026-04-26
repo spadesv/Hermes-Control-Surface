@@ -14,7 +14,7 @@ def collect_bluetooth_status():
 
     bt_info = run_cmd_args(["bluetoothctl", "info", bt_mac], timeout=2) if bt_mac else ""
     bt_connected = "Connected: yes" in bt_info
-    bt_paired = bool(bt_info)
+    bt_paired = "Paired: yes" in bt_info or bt_connected
     bt_name = ""
 
     if bt_info:

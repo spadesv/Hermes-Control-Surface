@@ -140,6 +140,16 @@ def cfg(*keys: str, default: Any = None) -> Any:
     return default if data is None else data
 
 
+
+def cfg_section(*keys: str, default: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Return a config subsection as a dict.
+
+    This keeps modules from re-reading YAML with process-dependent paths.
+    """
+    value = cfg(*keys, default=default or {})
+    return value if isinstance(value, dict) else (default or {})
+
+
 def cfg_str(*keys: str, default: str = "", strip: bool = True) -> str:
     value = cfg(*keys, default=default)
     if value is None:

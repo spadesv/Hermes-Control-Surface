@@ -1,8 +1,4 @@
-from pathlib import Path
-
-import yaml
-
-from app.config_loader import cfg_bool, cfg_nonempty, cfg_str
+from app.config_loader import cfg_bool, cfg_nonempty, cfg_section, cfg_str
 from app.service_status import get_service_specs
 
 
@@ -24,25 +20,8 @@ def _resolve(policy, auto_value):
     return bool(auto_value)
 
 
-def _load_yaml_config() -> dict:
-    """Load runtime config so dynamic dashboard policy keys can be enumerated."""
-    for path in (Path.cwd() / "config" / "config.yaml", Path.cwd() / "config" / "config.example.yaml"):
-        try:
-            if path.exists():
-                data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
-                return data if isinstance(data, dict) else {}
-        except Exception:
-            return {}
-    return {}
-
-
-def _config_section(name: str) -> dict:
-    section = (_load_yaml_config().get(name) or {})
-    return section if isinstance(section, dict) else {}
-
-
 def _dashboard_subsection(name: str) -> dict:
-    dashboard = _config_section("dashboard")
+    dashboard = cfg_section("dashboard", default={})
     section = dashboard.get(name) or {}
     return section if isinstance(section, dict) else {}
 

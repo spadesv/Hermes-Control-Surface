@@ -20,8 +20,8 @@ def collect_ups_status():
         for line in ups_raw.splitlines():
             if "Init SSL" in line:
                 continue
-            if line.startswith(("device.model:", "ups.model:")):
-                ups_model = line.split(": ", 1)[-1]
+            if line.startswith(("device.model:", "ups.model:", "ups.product:", "device.product:")):
+                ups_model = line.split(":", 1)[-1].strip()
             if line.startswith("battery.charge:"):
                 try:
                     ups_batt = int(line.split(": ", 1)[-1])

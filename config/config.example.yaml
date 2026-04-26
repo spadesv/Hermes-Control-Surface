@@ -37,9 +37,9 @@ frontend:
 build:
   # Fallback values only.
   # Real git / pyproject values take priority when available.
-  version: 0.1.0
-  build_date: "2026-04-25"
-  commit: v0.1.0
+  version: 0.1.1
+  build_date: "2026-04-26"
+  commit: v0.1.1
   channel: release
 
 agent:
@@ -69,9 +69,10 @@ network:
   # Dashboard gateway display value. Leave empty if not needed.
   gateway_ip: ""
 
-  # Used when provider = dual_http_probe
-  direct_probe_url: https://example.com/direct-ip
-  proxy_probe_url: https://example.com/proxy-ip
+  # Used when provider = dual_http_probe.
+  # Leave empty until you choose your own trusted IP echo endpoints.
+  direct_probe_url: ""
+  proxy_probe_url: ""
 
   # Used when provider = command.
   # These strings are trusted local commands. Do not accept untrusted input here.

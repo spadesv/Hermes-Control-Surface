@@ -1,5 +1,6 @@
 import re
 import time
+from pathlib import Path
 
 import psutil
 
@@ -38,35 +39,46 @@ def read_file(path):
         return ""
 
 
+def _disk_base_device(device: str) -> str:
+    """Return the block-device base path for common Linux device names."""
+    device = str(device or "")
+    if not device.startswith("/dev/"):
+        return device
+
+    # /dev/nvme0n1p1 -> /dev/nvme0n1
+    # /dev/mmcblk0p1 -> /dev/mmcblk0
+    device = re.sub(r"p\d+$", "", device)
+
+    # /dev/sda1 -> /dev/sda, /dev/vda2 -> /dev/vda
+    device = re.sub(r"\d+$", "", device)
+
+    return device
+
+
 def get_disk_parts():
     disk_parts = []
     disk_models = {}
 
-    for i in range(10):
-        dev = f"sd{chr(97+i)}"
-        model_path = f"/sys/block/{dev}/device/model"
-        try:
-            with open(model_path, encoding="utf-8") as f:
-                disk_models[f"/dev/{dev}"] = f.read().strip()
-        except FileNotFoundError:
-            pass
+    for block in Path("/sys/block").glob("*"):
+        model = read_file(str(block / "device" / "model"))
+        if model:
+            disk_models[f"/dev/{block.name}"] = model
 
-    for p in psutil.disk_partitions(all=False):
+    for part in psutil.disk_partitions(all=False):
         try:
-            usage = psutil.disk_usage(p.mountpoint)
-            model = disk_models.get(p.device, "")
-            if not model:
-                base = re.sub(r"\d+$", "", p.device)
-                model = disk_models.get(base, "")
+            usage = psutil.disk_usage(part.mountpoint)
+            model = disk_models.get(part.device, "") or disk_models.get(_disk_base_device(part.device), "")
             disk_parts.append({
-                "mount": p.mountpoint,
-                "device": p.device,
+                "mount": part.mountpoint,
+                "device": part.device,
                 "model": model,
                 "total_gb": bytes_to_gb(usage.total),
                 "used_gb": bytes_to_gb(usage.used),
                 "percent": usage.percent,
             })
-        except PermissionError:
+        except OSError:
+            # Mount points can disappear, be permission restricted, or be
+            # temporarily unavailable. A single bad mount must not break /api/stats.
             pass
 
     return disk_parts
@@ -74,8 +86,8 @@ def get_disk_parts():
 
 def get_temps():
     temps = []
-    for i in range(10):
-        val = read_file(f"/sys/class/thermal/thermal_zone{i}/temp")
+    for path in sorted(Path("/sys/class/thermal").glob("thermal_zone*/temp")):
+        val = read_file(str(path))
         if val and val.isdigit():
             temps.append(int(val) / 1000)
     return temps
