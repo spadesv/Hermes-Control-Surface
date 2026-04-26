@@ -3,7 +3,7 @@ from fastapi import APIRouter
 
 from app.agent_meta import get_agent_meta
 from app.system_metrics import collect_system_metrics
-from app.service_status import collect_service_status
+from app.service_status import collect_service_status, collect_service_status_list
 from app.ups_status import collect_ups_status
 from app.media_status import collect_media_status
 from app.network_status import collect_network_status
@@ -18,6 +18,7 @@ def get_stats():
     media = collect_media_status()
     system_info = collect_system_info()
     agent_meta = get_agent_meta()
+    services = collect_service_status()
 
     return {
         "timestamp": int(time.time()),
@@ -33,7 +34,8 @@ def get_stats():
         "network": collect_network_status(),
         "bluetooth": media["bluetooth"],
         "mpv": media["mpv"],
-        "services": collect_service_status(),
+        "services": services,
+        "services_list": collect_service_status_list(services),
         "system": system_info,
         "hostname": system_info["hostname"],
         "local_ip": system_info["local_ip"],

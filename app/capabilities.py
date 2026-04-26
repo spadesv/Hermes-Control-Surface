@@ -1,4 +1,5 @@
 from app.config_loader import cfg_bool, cfg_nonempty, cfg_str
+from app.service_status import get_service_specs
 
 
 VALID_POLICY = {"auto", "show", "hide"}
@@ -22,12 +23,18 @@ def _platform_known(agent_meta, platform_name):
     return platform_name in platforms
 
 
-def _service_configured(service_name):
-    if service_name == "pipewire":
-        return bool(cfg_nonempty("services", "pipewire_system", default="")) or bool(
-            cfg_nonempty("services", "pipewire_user", default="")
+def _build_service_capabilities():
+    services = {}
+
+    for spec in get_service_specs():
+        key = spec["key"]
+        default_policy = "show" if key == "hermes" else "auto"
+        services[key] = _resolve(
+            _policy("dashboard", "services", key, default=default_policy),
+            bool(spec.get("configured")),
         )
-    return bool(cfg_nonempty("services", service_name, default=""))
+
+    return services
 
 
 def build_capabilities(agent_meta=None):
@@ -60,32 +67,7 @@ def build_capabilities(agent_meta=None):
         "homeassistant": _resolve(_policy("dashboard", "platforms", "homeassistant"), homeassistant_auto),
     }
 
-    services = {
-        "hermes": _resolve(
-            _policy("dashboard", "services", "hermes", default="show"),
-            _service_configured("hermes"),
-        ),
-        "docker": _resolve(
-            _policy("dashboard", "services", "docker"),
-            _service_configured("docker"),
-        ),
-        "crowdsec": _resolve(
-            _policy("dashboard", "services", "crowdsec"),
-            _service_configured("crowdsec"),
-        ),
-        "pipewire": _resolve(
-            _policy("dashboard", "services", "pipewire"),
-            _service_configured("pipewire"),
-        ),
-        "smb": _resolve(
-            _policy("dashboard", "services", "smb"),
-            _service_configured("smb"),
-        ),
-        "watchdog": _resolve(
-            _policy("dashboard", "services", "watchdog"),
-            _service_configured("watchdog"),
-        ),
-    }
+    services = _build_service_capabilities()
 
     sections = {
         "platforms": _resolve(_policy("dashboard", "sections", "platforms"), any(platforms.values())),

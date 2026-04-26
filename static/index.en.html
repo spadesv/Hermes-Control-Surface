@@ -947,32 +947,7 @@ html[lang="zh-CN"] .metric-sub {
         <div class="stack">
           <section class="section" data-section="services">
             <div class="section-head"><h2>Services</h2></div>
-            <div class="list">
-              <div class="list-row" data-service="hermes">
-                <div class="list-left"><span class="dot-status" id="svc-hermes-dot"></span><div><div class="service-name">Hermes Agent</div><div class="service-sub" id="svc-hermes-sub">—</div></div></div>
-                <div class="tag idle" id="svc-hermes-tag">—</div>
-              </div>
-              <div class="list-row" data-service="docker">
-                <div class="list-left"><span class="dot-status" id="svc-docker-dot"></span><div><div class="service-name">Docker</div><div class="service-sub" id="svc-docker-sub">—</div></div></div>
-                <div class="tag idle" id="svc-docker-tag">—</div>
-              </div>
-              <div class="list-row" data-service="crowdsec">
-                <div class="list-left"><span class="dot-status" id="svc-crowdsec-dot"></span><div><div class="service-name">CrowdSec</div><div class="service-sub" id="svc-crowdsec-sub">—</div></div></div>
-                <div class="tag idle" id="svc-crowdsec-tag">—</div>
-              </div>
-              <div class="list-row" data-service="pipewire">
-                <div class="list-left"><span class="dot-status" id="svc-pipewire-dot"></span><div><div class="service-name">PipeWire</div><div class="service-sub" id="svc-pipewire-sub">—</div></div></div>
-                <div class="tag idle" id="svc-pipewire-tag">—</div>
-              </div>
-              <div class="list-row" data-service="smb">
-                <div class="list-left"><span class="dot-status" id="svc-smb-dot"></span><div><div class="service-name">SMB</div><div class="service-sub" id="svc-smb-sub">—</div></div></div>
-                <div class="tag idle" id="svc-smb-tag">—</div>
-              </div>
-              <div class="list-row" data-service="watchdog">
-                <div class="list-left"><span class="dot-status" id="svc-watchdog-dot"></span><div><div class="service-name">Watchdog</div><div class="service-sub" id="svc-watchdog-sub">—</div></div></div>
-                <div class="tag idle" id="svc-watchdog-tag">—</div>
-              </div>
-            </div>
+            <div class="list" id="servicesList"></div>
           </section>
 
           <section class="section" data-section="network">
@@ -1296,27 +1271,130 @@ html[lang="zh-CN"] .metric-sub {
     }
   }
 
-  function setService(key, ok) {
-    var dot = document.getElementById('svc-' + key + '-dot');
-    var tag = document.getElementById('svc-' + key + '-tag');
-    var sub = document.getElementById('svc-' + key + '-sub');
-    if (!dot || !tag || !sub) return;
-    if (ok === true) {
-      dot.className = 'dot-status ok';
-      tag.className = 'tag ok';
-      tag.textContent = 'Online';
-      sub.textContent = 'Running';
-    } else if (ok === false) {
-      dot.className = 'dot-status err';
-      tag.className = 'tag err';
-      tag.textContent = 'Offline';
-      sub.textContent = 'Not Running';
-    } else {
-      dot.className = 'dot-status';
-      tag.className = 'tag idle';
-      tag.textContent = '—';
-      sub.textContent = '—';
-    }
+  function serviceDisplayName(key) {
+    var labels = {
+      hermes: 'Hermes Agent',
+      docker: 'Docker',
+      crowdsec: 'CrowdSec',
+      pipewire: 'PipeWire',
+      smb: 'SMB',
+      watchdog: 'Watchdog'
+    };
+
+    if (labels[key]) return labels[key];
+
+    var text = String(key || 'Service').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!text) return 'Service';
+
+    return text.split(' ').map(function (word) {
+      var lower = word.toLowerCase();
+      var upperWords = {
+        api: true, cpu: true, dns: true, gpu: true, ha: true,
+        http: true, https: true, ip: true, mpv: true, smb: true,
+        ssh: true, ssl: true, ups: true, vpn: true
+      };
+
+      if (upperWords[lower]) return lower.toUpperCase();
+      if (lower === 'nginx') return 'Nginx';
+      if (lower === 'redis') return 'Redis';
+      if (lower === 'docker') return 'Docker';
+      if (lower === 'crowdsec') return 'CrowdSec';
+      if (lower === 'homeassistant') return 'Home Assistant';
+
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+  }
+
+  function refreshServiceStack(section) {
+    if (!section || !section.parentElement) return;
+
+    var stack = section.parentElement;
+    if (!stack.classList || !stack.classList.contains('stack')) return;
+
+    var visibleChildren = Array.prototype.some.call(stack.children, function (el) {
+      return el.getAttribute('data-hcs-hidden') !== 'true';
+    });
+
+    stack.setAttribute('data-hcs-hidden', visibleChildren ? 'false' : 'true');
+    stack.hidden = !visibleChildren;
+  }
+
+  function renderServices(serviceList, services, serviceCaps, sectionCaps) {
+    var container = document.getElementById('servicesList');
+    var section = document.querySelector('[data-section="services"]');
+    if (!container || !section) return;
+
+    services = services || {};
+    serviceCaps = serviceCaps || {};
+    sectionCaps = sectionCaps || {};
+
+    container.textContent = '';
+
+    var rows = Array.isArray(serviceList) && serviceList.length
+      ? serviceList
+      : Object.keys(services).map(function (key) {
+          return { key: key, label: serviceDisplayName(key), running: services[key] };
+        });
+
+    var rendered = 0;
+
+    rows.forEach(function (svc) {
+      if (!svc || !svc.key) return;
+
+      var key = String(svc.key);
+      if (serviceCaps[key] === false) return;
+
+      var ok = typeof svc.running === 'boolean' ? svc.running : services[key];
+
+      var row = document.createElement('div');
+      row.className = 'list-row';
+      row.setAttribute('data-service', key);
+
+      var left = document.createElement('div');
+      left.className = 'list-left';
+
+      var dot = document.createElement('span');
+      dot.className = ok === true ? 'dot-status ok' : ok === false ? 'dot-status err' : 'dot-status';
+
+      var textWrap = document.createElement('div');
+
+      var name = document.createElement('div');
+      name.className = 'service-name';
+      name.textContent = svc.label || serviceDisplayName(key);
+
+      var sub = document.createElement('div');
+      sub.className = 'service-sub';
+
+      var tag = document.createElement('div');
+
+      if (ok === true) {
+        sub.textContent = 'Running';
+        tag.className = 'tag ok';
+        tag.textContent = 'Online';
+      } else if (ok === false) {
+        sub.textContent = 'Not Running';
+        tag.className = 'tag err';
+        tag.textContent = 'Offline';
+      } else {
+        sub.textContent = '—';
+        tag.className = 'tag idle';
+        tag.textContent = '—';
+      }
+
+      textWrap.appendChild(name);
+      textWrap.appendChild(sub);
+      left.appendChild(dot);
+      left.appendChild(textWrap);
+      row.appendChild(left);
+      row.appendChild(tag);
+      container.appendChild(row);
+      rendered++;
+    });
+
+    var visible = sectionCaps.services !== false && rendered > 0;
+    section.setAttribute('data-hcs-hidden', visible ? 'false' : 'true');
+    section.hidden = !visible;
+    refreshServiceStack(section);
   }
 
   function setBar(id, pct) {
@@ -1360,12 +1438,7 @@ html[lang="zh-CN"] .metric-sub {
     setVisible('[data-platform="discord"]', enabled(platforms, 'discord'));
     setVisible('[data-platform="homeassistant"]', enabled(platforms, 'homeassistant'));
 
-    setVisible('[data-service="hermes"]', enabled(serviceCaps, 'hermes'));
-    setVisible('[data-service="docker"]', enabled(serviceCaps, 'docker'));
-    setVisible('[data-service="crowdsec"]', enabled(serviceCaps, 'crowdsec'));
-    setVisible('[data-service="pipewire"]', enabled(serviceCaps, 'pipewire'));
-    setVisible('[data-service="smb"]', enabled(serviceCaps, 'smb'));
-    setVisible('[data-service="watchdog"]', enabled(serviceCaps, 'watchdog'));
+    // Service rows are rendered dynamically by renderServices().
 
     var anyPlatformVisible = Array.prototype.some.call(
       document.querySelectorAll('[data-platform]'),
@@ -1374,12 +1447,9 @@ html[lang="zh-CN"] .metric-sub {
       }
     );
 
-    var anyServiceVisible = Array.prototype.some.call(
-      document.querySelectorAll('[data-service]'),
-      function (el) {
-        return el.getAttribute('data-hcs-hidden') !== 'true';
-      }
-    );
+    var anyServiceVisible = Object.keys(serviceCaps).some(function (key) {
+      return serviceCaps[key] !== false;
+    });
 
     setVisible('[data-section="platforms"]', enabled(sections, 'platforms') && anyPlatformVisible);
     setVisible('[data-section="services"]', enabled(sections, 'services') && anyServiceVisible);
@@ -1528,12 +1598,13 @@ html[lang="zh-CN"] .metric-sub {
     }
 
     var services = d.services || {};
-    setService('hermes', services.hermes);
-    setService('docker', services.docker);
-    setService('crowdsec', services.crowdsec);
-    setService('pipewire', services.pipewire);
-    setService('smb', services.smb);
-    setService('watchdog', services.watchdog);
+    var serviceList = Array.isArray(d.services_list) ? d.services_list : [];
+    renderServices(
+      serviceList,
+      services,
+      (d.capabilities && d.capabilities.services) || {},
+      (d.capabilities && d.capabilities.sections) || {}
+    );
     setText('pw-sub', services.pipewire === true ? 'Bluetooth audio enabled' : services.pipewire === false ? 'Not Running' : '—');
   }
 

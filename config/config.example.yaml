@@ -88,13 +88,18 @@ system:
 
 services:
   # Service names for local detection.
-  # The dashboard checks only these allow-listed services; it does not scan
-  # every systemd unit on the host.
+  # The dashboard renders configured services dynamically. Add more key: unit
+  # pairs if you want to monitor additional systemd services, for example:
+  # nginx: nginx
+  # redis: redis-server
   hermes: hermes-gateway
   crowdsec: crowdsec
   docker: docker
   watchdog: watchdog
   smb: smbd
+
+  # PipeWire can be checked either as a system service or as a user service.
+  # These two keys are merged into one PipeWire row in the dashboard.
   pipewire_system: ""
   pipewire_user: ""
 
