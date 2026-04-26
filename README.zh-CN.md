@@ -143,7 +143,7 @@ hide  隐藏
 
 ```yaml
 services:
-  hermes: hermes-control-surface
+  hermes: hermes-gateway
   docker: docker
   crowdsec: crowdsec
 ```

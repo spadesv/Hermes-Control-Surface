@@ -40,7 +40,7 @@ def _mpv_user_runtime_env(mpv_user: str) -> list[str]:
 
 def collect_service_status():
     mpv_user = cfg_str("mpv", "user", default="")
-    pipewire_user_unit = cfg_str("services", "pipewire_user", default="bt-music.service")
+    pipewire_user_unit = cfg_str("services", "pipewire_user", default="")
 
     pipewire_user_active = False
     if mpv_user and pipewire_user_unit:
@@ -55,5 +55,5 @@ def collect_service_status():
         "docker": check_svc(cfg_nonempty("services", "docker", default="docker")),
         "watchdog": check_svc(cfg_nonempty("services", "watchdog", default="watchdog")) or os.path.exists("/dev/watchdog0") or os.path.exists("/dev/watchdog"),
         "smb": check_svc(cfg_nonempty("services", "smb", default="smbd")),
-        "pipewire": check_svc(cfg_nonempty("services", "pipewire_system", default="bt-music.service")) or pipewire_user_active,
+        "pipewire": check_svc(cfg_nonempty("services", "pipewire_system", default="")) or pipewire_user_active,
     }

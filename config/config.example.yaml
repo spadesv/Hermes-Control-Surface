@@ -95,8 +95,8 @@ services:
   docker: docker
   watchdog: watchdog
   smb: smbd
-  pipewire_system: bt-music.service
-  pipewire_user: bt-music.service
+  pipewire_system: ""
+  pipewire_user: ""
 
 ups:
   # Optional UPS integration

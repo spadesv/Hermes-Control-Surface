@@ -157,7 +157,7 @@ You define the services you care about:
 
 ```yaml
 services:
-  hermes: hermes-control-surface
+  hermes: hermes-gateway
   docker: docker
   crowdsec: crowdsec
 ```
