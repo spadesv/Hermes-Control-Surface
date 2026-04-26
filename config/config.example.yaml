@@ -145,6 +145,8 @@ dashboard:
     disk: show
 
   platforms:
+    # Platform rows are rendered dynamically from Hermes gateway state.
+    # Add more keys here only when you want to force show/hide behavior.
     telegram: auto
     discord: auto
     homeassistant: auto

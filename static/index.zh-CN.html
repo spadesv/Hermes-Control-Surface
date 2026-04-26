@@ -898,29 +898,7 @@ html[lang="zh-CN"] .metric-sub {
           </div>
           <div class="info-card" data-section="platforms">
             <div class="info-head"><h3>平台状态</h3></div>
-            <div class="platforms">
-              <div class="platform" data-platform="telegram">
-                <div>
-                  <div class="platform-name">Telegram</div>
-                  <div class="platform-note">实时连接状态</div>
-                </div>
-                <div class="tag idle" id="telegramStatus">—</div>
-              </div>
-              <div class="platform" data-platform="discord">
-                <div>
-                  <div class="platform-name">Discord</div>
-                  <div class="platform-note">实时连接状态</div>
-                </div>
-                <div class="tag idle" id="discordStatus">—</div>
-              </div>
-              <div class="platform" data-platform="homeassistant">
-                <div>
-                  <div class="platform-name">Home Assistant</div>
-                  <div class="platform-note">实时连接状态</div>
-                </div>
-                <div class="tag idle" id="haStatus">—</div>
-              </div>
-            </div>
+            <div class="platforms" id="platformsList"></div>
           </div>
         </div>
       </section>
@@ -1271,6 +1249,105 @@ html[lang="zh-CN"] .metric-sub {
     }
   }
 
+  function platformDisplayName(key) {
+    var labels = {
+      telegram: 'Telegram',
+      discord: 'Discord',
+      homeassistant: 'Home Assistant'
+    };
+
+    if (labels[key]) return labels[key];
+
+    var text = String(key || 'Platform').replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!text) return 'Platform';
+
+    return text.split(' ').map(function (word) {
+      var lower = word.toLowerCase();
+      var upperWords = {
+        api: true, bot: true, ha: true, http: true, https: true,
+        irc: true, sms: true, xmpp: true
+      };
+
+      if (upperWords[lower]) return lower.toUpperCase();
+      if (lower === 'homeassistant') return 'Home Assistant';
+      if (lower === 'telegram') return 'Telegram';
+      if (lower === 'discord') return 'Discord';
+      if (lower === 'slack') return 'Slack';
+      if (lower === 'matrix') return 'Matrix';
+      if (lower === 'signal') return 'Signal';
+
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }).join(' ');
+  }
+
+  function renderPlatforms(platforms, platformCaps, sectionCaps) {
+    var container = document.getElementById('platformsList');
+    var section = document.querySelector('[data-section="platforms"]');
+    if (!container || !section) return;
+
+    platforms = platforms || {};
+    platformCaps = platformCaps || {};
+    sectionCaps = sectionCaps || {};
+
+    container.textContent = '';
+
+    var keys = [];
+    function addKey(key) {
+      key = String(key || '').trim();
+      if (key && keys.indexOf(key) === -1) keys.push(key);
+    }
+
+    ['telegram', 'discord', 'homeassistant'].forEach(addKey);
+    Object.keys(platformCaps).forEach(addKey);
+    Object.keys(platforms).forEach(addKey);
+
+    var rendered = 0;
+
+    keys.forEach(function (key) {
+      if (platformCaps[key] === false) return;
+
+      var value = platforms[key];
+
+      var row = document.createElement('div');
+      row.className = 'platform';
+      row.setAttribute('data-platform', key);
+
+      var textWrap = document.createElement('div');
+
+      var name = document.createElement('div');
+      name.className = 'platform-name';
+      name.textContent = platformDisplayName(key);
+
+      var note = document.createElement('div');
+      note.className = 'platform-note';
+      note.textContent = '实时连接状态';
+
+      var tag = document.createElement('div');
+
+      if (value === true) {
+        tag.className = 'tag ok';
+        tag.textContent = '已连接';
+      } else if (value === false) {
+        tag.className = 'tag err';
+        tag.textContent = '未连接';
+      } else {
+        tag.className = 'tag idle';
+        tag.textContent = '—';
+      }
+
+      textWrap.appendChild(name);
+      textWrap.appendChild(note);
+      row.appendChild(textWrap);
+      row.appendChild(tag);
+      container.appendChild(row);
+      rendered++;
+    });
+
+    var visible = sectionCaps.platforms !== false && rendered > 0;
+    section.setAttribute('data-hcs-hidden', visible ? 'false' : 'true');
+    section.hidden = !visible;
+  }
+
   function serviceDisplayName(key) {
     var labels = {
       hermes: 'Hermes Agent',
@@ -1434,18 +1511,13 @@ html[lang="zh-CN"] .metric-sub {
     setVisible('[data-card="memory"]', enabled(cards, 'memory'));
     setVisible('[data-card="disk"]', enabled(cards, 'disk'));
 
-    setVisible('[data-platform="telegram"]', enabled(platforms, 'telegram'));
-    setVisible('[data-platform="discord"]', enabled(platforms, 'discord'));
-    setVisible('[data-platform="homeassistant"]', enabled(platforms, 'homeassistant'));
+    // Platform rows are rendered dynamically by renderPlatforms().
 
     // Service rows are rendered dynamically by renderServices().
 
-    var anyPlatformVisible = Array.prototype.some.call(
-      document.querySelectorAll('[data-platform]'),
-      function (el) {
-        return el.getAttribute('data-hcs-hidden') !== 'true';
-      }
-    );
+    var anyPlatformVisible = Object.keys(platforms).some(function (key) {
+      return platforms[key] !== false;
+    });
 
     var anyServiceVisible = Object.keys(serviceCaps).some(function (key) {
       return serviceCaps[key] !== false;
@@ -1504,17 +1576,18 @@ html[lang="zh-CN"] .metric-sub {
     setText('agentFallbackModel', agent.fallback_model || '—');
 
     var platforms = agent.platforms || {};
-    setTag('telegramStatus', platforms.telegram);
-    setTag('discordStatus', platforms.discord);
-    setTag('haStatus', platforms.homeassistant);
+    var capPlatforms = (d.capabilities && d.capabilities.platforms) || {};
+    renderPlatforms(
+      platforms,
+      capPlatforms,
+      (d.capabilities && d.capabilities.sections) || {}
+    );
 
     // Hero summary
     var gatewayOk = agent.gateway_running === true;
-    var capPlatforms = (d.capabilities && d.capabilities.platforms) || {};
-    var platCount = 0;
-    if (platforms.telegram && capPlatforms.telegram !== false) platCount++;
-    if (platforms.discord && capPlatforms.discord !== false) platCount++;
-    if (platforms.homeassistant && capPlatforms.homeassistant !== false) platCount++;
+    var platCount = Object.keys(platforms).filter(function (key) {
+      return platforms[key] === true && capPlatforms[key] !== false;
+    }).length;
     setText('heroSummary', (gatewayOk ? '网关正常' : '网关异常') + ' · 已连接 ' + platCount + ' 个平台');
 
     // Automation fetch

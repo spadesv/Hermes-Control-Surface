@@ -1,8 +1,14 @@
+from pathlib import Path
+
+import yaml
+
 from app.config_loader import cfg_bool, cfg_nonempty, cfg_str
 from app.service_status import get_service_specs
 
 
 VALID_POLICY = {"auto", "show", "hide"}
+
+KNOWN_PLATFORM_ORDER = ["telegram", "discord", "homeassistant"]
 
 
 def _policy(*keys, default="auto"):
@@ -18,9 +24,58 @@ def _resolve(policy, auto_value):
     return bool(auto_value)
 
 
-def _platform_known(agent_meta, platform_name):
-    platforms = (agent_meta or {}).get("platforms") or {}
-    return platform_name in platforms
+def _load_yaml_config() -> dict:
+    """Load runtime config so dynamic dashboard policy keys can be enumerated."""
+    for path in (Path.cwd() / "config" / "config.yaml", Path.cwd() / "config" / "config.example.yaml"):
+        try:
+            if path.exists():
+                data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+                return data if isinstance(data, dict) else {}
+        except Exception:
+            return {}
+    return {}
+
+
+def _config_section(name: str) -> dict:
+    section = (_load_yaml_config().get(name) or {})
+    return section if isinstance(section, dict) else {}
+
+
+def _dashboard_subsection(name: str) -> dict:
+    dashboard = _config_section("dashboard")
+    section = dashboard.get(name) or {}
+    return section if isinstance(section, dict) else {}
+
+
+def _append_unique(keys: list[str], value) -> None:
+    key = str(value or "").strip()
+    if key and key not in keys:
+        keys.append(key)
+
+
+def _build_platform_capabilities(agent_meta=None):
+    agent_platforms = (agent_meta or {}).get("platforms") or {}
+    if not isinstance(agent_platforms, dict):
+        agent_platforms = {}
+
+    configured_platforms = _dashboard_subsection("platforms")
+
+    keys = []
+    for key in KNOWN_PLATFORM_ORDER:
+        _append_unique(keys, key)
+    for key in configured_platforms.keys():
+        _append_unique(keys, key)
+    for key in agent_platforms.keys():
+        _append_unique(keys, key)
+
+    platforms = {}
+    for key in keys:
+        platforms[key] = _resolve(
+            _policy("dashboard", "platforms", key),
+            key in agent_platforms,
+        )
+
+    return platforms
 
 
 def _build_service_capabilities():
@@ -57,16 +112,7 @@ def build_capabilities(agent_meta=None):
     mpv_auto = bool(cfg_nonempty("mpv", "socket", default="")) and bool(cfg_nonempty("mpv", "user", default=""))
     audio_auto = bluetooth_auto or mpv_auto
 
-    telegram_auto = _platform_known(agent_meta, "telegram")
-    discord_auto = _platform_known(agent_meta, "discord")
-    homeassistant_auto = _platform_known(agent_meta, "homeassistant")
-
-    platforms = {
-        "telegram": _resolve(_policy("dashboard", "platforms", "telegram"), telegram_auto),
-        "discord": _resolve(_policy("dashboard", "platforms", "discord"), discord_auto),
-        "homeassistant": _resolve(_policy("dashboard", "platforms", "homeassistant"), homeassistant_auto),
-    }
-
+    platforms = _build_platform_capabilities(agent_meta)
     services = _build_service_capabilities()
 
     sections = {
