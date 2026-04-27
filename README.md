@@ -165,13 +165,21 @@ This keeps the dashboard predictable.
 - [安装说明](docs/INSTALL.zh-CN.md)
 - [Usage Guide](docs/USAGE.en.md)
 - [使用说明](docs/USAGE.zh-CN.md)
+- [Configuration Reference](docs/CONFIG_REFERENCE.en.md)
+- [配置字段参考](docs/CONFIG_REFERENCE.zh-CN.md)
+
+For read-only support diagnostics, run:
+
+```bash
+bash scripts/doctor.sh
+```
 
 ## Notes
 
 Hermes Control Surface is an independent local dashboard.  
 It is not an official Hermes Agent release.
 
-This is an early `v0.1.1` release with dynamic service/platform rows and safer public defaults. Thoughtful fixes, careful polish, and practical ideas are welcome.
+This is an early `v0.1.2` release with dynamic rows, diagnostics, and safer public defaults. Thoughtful fixes, careful polish, and practical ideas are welcome.
 
 ## License
 

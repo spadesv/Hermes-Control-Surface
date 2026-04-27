@@ -48,7 +48,7 @@ def get_agent_meta():
     agent_config = agent_home / config_rel
     agent_gateway_state = agent_home / gateway_state_rel
 
-    agent_version = cfg_str("build", "version", default="0.1.1")
+    agent_version = "—"
     try:
         with open(agent_pyproject, encoding="utf-8") as f:
             for line in f:
@@ -60,9 +60,9 @@ def get_agent_meta():
 
     agent_commit, agent_build_date = _get_repo_build_meta(str(agent_repo), str(agent_pyproject))
     if agent_commit == "—":
-        agent_commit = cfg_str("build", "commit", default="local")
+        agent_commit = "—"
     if agent_build_date == "—":
-        agent_build_date = cfg_str("build", "build_date", default="2026-04-26")
+        agent_build_date = "—"
 
     agent_primary_model = "—"
     agent_primary_provider = "—"

@@ -801,6 +801,63 @@ html[lang="zh-CN"] .metric-sub {
   }
 }
 
+
+/* HCS build footer: small Apple-style version line in Settings */
+.settings-drawer__body {
+  padding-bottom: 78px;
+}
+
+.settings-build-footer {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 16px;
+  z-index: 3;
+  pointer-events: none;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 12px 0;
+  text-align: center;
+  color: color-mix(in srgb, var(--text-3) 74%, transparent);
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: -0.012em;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+
+.settings-build-footer::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 0;
+  height: 1px;
+  background: color-mix(in srgb, var(--line-soft) 72%, transparent);
+}
+
+.settings-build-footer__line {
+  white-space: nowrap;
+}
+
+.settings-build-footer__line:first-child {
+  color: color-mix(in srgb, var(--text-2) 82%, transparent);
+  font-weight: 600;
+}
+
+@media (max-width: 700px) {
+  .settings-drawer__body {
+    padding-bottom: 72px;
+  }
+
+  .settings-build-footer {
+    bottom: 14px;
+    font-size: 11.8px;
+    gap: 1px;
+  }
+}
+
 </style>
 
 
@@ -1572,6 +1629,8 @@ html[lang="zh-CN"] .metric-sub {
 
     var agent = d.agent || {};
     setText('agentVersion', agent.version || '—');
+    setText('agentBuildDate', agent.build_date || '—');
+    setText('agentCommit', agent.commit || '—');
     setText('agentModel', agent.primary_model || '—');
     setText('agentFallbackModel', agent.fallback_model || '—');
 
@@ -1967,44 +2026,6 @@ html[lang="zh-CN"] .metric-sub {
 </script>
 
 
-<script>
-/* build-meta front-end only */
-(function () {
-  if (window.__buildMetaFrontendOnlyLoaded) return;
-  window.__buildMetaFrontendOnlyLoaded = true;
-
-  function setTextSafe(id, value) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = value == null || value === '' ? '—' : value;
-  }
-
-  function loadBuildMeta() {
-    fetch('/build-meta.json', { cache: 'no-store' })
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (meta) {
-        if (!meta) return;
-
-        // Prefer dynamic values from /api/stats; only fall back to build-meta when missing
-        var versionEl = document.getElementById('agentVersion');
-        if (!versionEl || !versionEl.textContent || versionEl.textContent.trim() === '—') {
-          setTextSafe('agentVersion', meta.version || '—');
-        }
-
-        setTextSafe('agentBuildDate', meta.build_date || '—');
-        setTextSafe('agentCommit', meta.commit || '—');
-      })
-      .catch(function () {});
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    loadBuildMeta();
-    setTimeout(loadBuildMeta, 500);
-  });
-})();
-</script>
-
-
   <div class="settings-overlay" id="settingsOverlay" hidden></div>
 <aside class="settings-drawer" id="settingsDrawer" aria-hidden="true">
   <div class="settings-drawer__head">
@@ -2177,8 +2198,47 @@ html[lang="zh-CN"] .metric-sub {
       </div>
     </div>
   </div>
+  <div class="settings-build-footer" aria-live="polite">
+    <div class="settings-build-footer__line" id="settingsBuildVersion">版本 —</div>
+    <div class="settings-build-footer__line" id="settingsBuildDate">构建 —</div>
+  </div>
 </aside>
 
+<script>
+/* settings build footer: HCS metadata only */
+(function () {
+  if (window.__settingsBuildFooterLoaded) return;
+  window.__settingsBuildFooterLoaded = true;
+
+  function setText(id, value) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value;
+  }
+
+  function render(meta) {
+    meta = meta || {};
+    var version = meta.version || '—';
+    var channel = meta.channel || 'stable';
+    var buildDate = meta.build_date || meta.buildDate || '—';
+    setText('settingsBuildVersion', '版本 ' + version + ' · ' + channel);
+    setText('settingsBuildDate', '构建 ' + buildDate);
+  }
+
+  function load() {
+    fetch('/build-meta.json', { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(render)
+      .catch(function () { render(null); });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', load);
+  } else {
+    load();
+  }
+})();
+</script>
 
 <script>
 /* settings entry step 1 */

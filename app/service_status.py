@@ -156,7 +156,7 @@ def _pipewire_running() -> bool:
         cmd = ["sudo", "-u", mpv_user, "env"]
         cmd.extend(_mpv_user_runtime_env(mpv_user))
         cmd.extend(["systemctl", "--user", "is-active", pipewire_user_unit])
-        pipewire_user_active = bool(run_cmd_args(cmd, timeout=2))
+        pipewire_user_active = run_cmd_args(cmd, timeout=2) == "active"
 
     return check_svc(pipewire_system_unit) or pipewire_user_active
 

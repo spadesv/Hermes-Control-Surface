@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.2 - Diagnostics and settings polish
+
+This release focuses on support readiness, diagnostics, and a small settings UI polish pass.
+
+It includes:
+
+- Added `scripts/doctor.sh` for read-only environment diagnostics
+- Added safe `collector_errors` in `/api/stats` for support troubleshooting
+- Kept Hermes Agent metadata separate from Hermes Control Surface build metadata
+- Added a refined settings drawer build footer driven by `/build-meta.json`
+- Added configuration reference documentation and issue templates
+- Updated release metadata and package references for `v0.1.2`
+
 ## v0.1.1 - Dynamic rows and release hardening
 
 This release focuses on making the public package safer and more extensible.

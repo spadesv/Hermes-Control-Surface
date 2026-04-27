@@ -87,7 +87,7 @@ If you downloaded a release package:
 
 ```bash
 sudo mkdir -p /opt
-sudo tar -C /opt -xzf hermes-control-surface-v0.1.1.tar.gz
+sudo tar -C /opt -xzf hermes-control-surface-v0.1.2.tar.gz
 cd /opt/hermes-control-surface
 ```
 
@@ -158,6 +158,12 @@ sudo systemctl enable --now hermes-control-surface.service
 ```bash
 curl -fsS http://127.0.0.1:9091/ >/dev/null
 curl -fsS http://127.0.0.1:9091/api/stats >/dev/null
+```
+
+For a fuller read-only diagnostic report:
+
+```bash
+bash scripts/doctor.sh
 ```
 
 Open:

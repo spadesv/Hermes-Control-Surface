@@ -35,12 +35,12 @@ frontend:
   footer_brand: Hermes Agent
 
 build:
-  # Fallback values only.
-  # Real git / pyproject values take priority when available.
-  version: 0.1.1
-  build_date: "2026-04-26"
-  commit: v0.1.1
-  channel: release
+  # Hermes Control Surface build metadata.
+  # This is separate from Hermes Agent version / commit data.
+  version: 0.1.2
+  build_date: "2026-04-27"
+  commit: v0.1.2
+  channel: stable
 
 agent:
   # Hermes base path

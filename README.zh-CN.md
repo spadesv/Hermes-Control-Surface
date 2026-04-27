@@ -165,13 +165,21 @@ dashboard:
 - [English Installation Guide](docs/INSTALL.en.md)
 - [中文使用说明](docs/USAGE.zh-CN.md)
 - [Usage Guide](docs/USAGE.en.md)
+- [中文配置字段参考](docs/CONFIG_REFERENCE.zh-CN.md)
+- [Configuration Reference](docs/CONFIG_REFERENCE.en.md)
+
+只读诊断可以运行：
+
+```bash
+bash scripts/doctor.sh
+```
 
 ## 说明
 
 Hermes Control Surface 是一个独立的本地控制面板。  
 它不是 Hermes Agent 的官方发布。
 
-这是早期的 `v0.1.1` 版本，已加入动态服务/平台行和更安全的公开默认配置。欢迎认真、克制、实用的修正和想法，一起把它继续打磨得更好。
+这是早期的 `v0.1.2` 版本，已加入动态行、诊断脚本和更安全的公开默认配置。欢迎认真、克制、实用的修正和想法，一起把它继续打磨得更好。
 
 ## 许可证
 
