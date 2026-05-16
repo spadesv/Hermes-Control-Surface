@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.3 - Disk display hotfix and Hermes compatibility polish
+
+This release focuses on a small but important storage-display fix and better support diagnostics.
+
+It includes:
+
+- Filtered EFI/system pseudo mounts and Docker/container submounts from dashboard disk slots
+- Kept the root disk first and real data mounts next in `/api/stats.disks`
+- Prevented tiny non-root system partitions from hiding real data disks
+- Added disk and HCS-vs-Agent metadata summaries to `scripts/doctor.sh`
+- Updated release metadata and package references for `v0.1.3`
+
 ## v0.1.2 - Diagnostics and settings polish
 
 This release focuses on support readiness, diagnostics, and a small settings UI polish pass.

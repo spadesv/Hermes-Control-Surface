@@ -87,7 +87,7 @@ http://你的服务器地址:9091/
 
 ```bash
 sudo mkdir -p /opt
-sudo tar -C /opt -xzf hermes-control-surface-v0.1.2.tar.gz
+sudo tar -C /opt -xzf hermes-control-surface-v0.1.3.tar.gz
 cd /opt/hermes-control-surface
 ```
 

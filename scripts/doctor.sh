@@ -150,14 +150,55 @@ except Exception as exc:
     print(raw[:500])
     raise SystemExit(0)
 
+agent = data.get("agent") or {}
+services_list = data.get("services_list") or []
+disks = data.get("disks") or []
+
 summary = {
-    "agent": data.get("agent"),
+    "agent": agent,
     "collector_errors": data.get("collector_errors"),
     "services_keys": sorted((data.get("services") or {}).keys()),
-    "services_list_keys": [x.get("key") for x in (data.get("services_list") or []) if isinstance(x, dict)],
+    "services_list_keys": [x.get("key") for x in services_list if isinstance(x, dict)],
     "platforms": (data.get("capabilities") or {}).get("platforms"),
+    "disks": [
+        {
+            "mount": x.get("mount"),
+            "device": x.get("device"),
+            "model": x.get("model"),
+            "total_gb": x.get("total_gb"),
+            "used_gb": x.get("used_gb"),
+            "percent": x.get("percent"),
+        }
+        for x in disks[:6]
+        if isinstance(x, dict)
+    ],
 }
 print(json.dumps(summary, ensure_ascii=False, indent=2))
+
+print()
+print("--- disk display summary ---")
+if not disks:
+    print("WARN: no disks returned by /api/stats")
+else:
+    for disk in disks[:6]:
+        if not isinstance(disk, dict):
+            continue
+        print(
+            "- {mount} {device} {model} {used}/{total}GB {percent}%".format(
+                mount=disk.get("mount") or "—",
+                device=disk.get("device") or "—",
+                model=disk.get("model") or "—",
+                used=disk.get("used_gb", "—"),
+                total=disk.get("total_gb", "—"),
+                percent=disk.get("percent", "—"),
+            )
+        )
+
+print()
+print("--- metadata separation check ---")
+print("Hermes Agent version:", agent.get("version") or "—")
+print("Hermes Agent commit:", agent.get("commit") or "—")
+print("HCS build metadata: see /build-meta.json above")
 PY
 else
   warn "cannot fetch /api/stats"
@@ -183,13 +224,11 @@ fi
 
 echo
 echo "===== Local artifacts in app tree ====="
+echo "Note: runtime Python caches are normal and are intentionally not listed here."
 find . \
   -path './.venv' -prune -o \
   -path './.venv/*' -prune -o \
-  \( -name '__pycache__' \
-  -o -name '*.pyc' \
-  -o -name '*.pyo' \
-  -o -name '.pytest_cache' \
+  \( -name '.pytest_cache' \
   -o -name '.mypy_cache' \
   -o -name '.ruff_cache' \
   -o -name '.coverage' \

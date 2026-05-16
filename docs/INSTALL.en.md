@@ -87,7 +87,7 @@ If you downloaded a release package:
 
 ```bash
 sudo mkdir -p /opt
-sudo tar -C /opt -xzf hermes-control-surface-v0.1.2.tar.gz
+sudo tar -C /opt -xzf hermes-control-surface-v0.1.3.tar.gz
 cd /opt/hermes-control-surface
 ```
 

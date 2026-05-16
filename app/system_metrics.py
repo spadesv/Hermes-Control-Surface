@@ -55,9 +55,80 @@ def _disk_base_device(device: str) -> str:
     return device
 
 
+def _is_noise_mount(mountpoint: str, fstype: str) -> bool:
+    """Return True for mounts that should not consume dashboard disk slots."""
+    mountpoint = str(mountpoint or "")
+    fstype = str(fstype or "").lower()
+
+    noisy_fstypes = {
+        "autofs",
+        "binfmt_misc",
+        "cgroup",
+        "cgroup2",
+        "configfs",
+        "debugfs",
+        "devpts",
+        "devtmpfs",
+        "efivarfs",
+        "fusectl",
+        "hugetlbfs",
+        "mqueue",
+        "overlay",
+        "proc",
+        "pstore",
+        "securityfs",
+        "squashfs",
+        "sysfs",
+        "tmpfs",
+        "tracefs",
+    }
+
+    if fstype in noisy_fstypes:
+        return True
+
+    exact_mounts = {
+        "/boot",
+        "/boot/efi",
+        "/efi",
+        "/tmp",
+    }
+
+    if mountpoint in exact_mounts:
+        return True
+
+    noisy_prefixes = (
+        "/dev/",
+        "/proc/",
+        "/run/",
+        "/sys/",
+        "/var/lib/docker/",
+        "/var/lib/containers/",
+        "/snap/",
+    )
+
+    return mountpoint.startswith(noisy_prefixes)
+
+
+def _disk_display_score(item: dict) -> tuple:
+    """Sort root first, then real user/data mounts by size."""
+    mount = item.get("mount") or ""
+    total = item.get("total_gb") or 0
+    device = item.get("device") or ""
+
+    if mount == "/":
+        return (0, 0, mount)
+
+    if mount.startswith(("/mnt/", "/media/", "/srv/", "/home")):
+        return (1, -total, mount)
+
+    return (2, -total, mount or device)
+
+
 def get_disk_parts():
     disk_parts = []
     disk_models = {}
+    seen_mounts = set()
+    seen_devices = set()
 
     for block in Path("/sys/block").glob("*"):
         model = read_file(str(block / "device" / "model"))
@@ -65,22 +136,47 @@ def get_disk_parts():
             disk_models[f"/dev/{block.name}"] = model
 
     for part in psutil.disk_partitions(all=False):
+        mountpoint = str(part.mountpoint or "")
+        device = str(part.device or "")
+        fstype = str(part.fstype or "")
+
+        if _is_noise_mount(mountpoint, fstype):
+            continue
+
+        if mountpoint in seen_mounts:
+            continue
+
+        # Avoid showing btrfs/docker submounts or duplicated system subvolumes
+        # as separate dashboard disks. Keep root first, then real data mounts.
+        device_mount_key = (device, mountpoint)
+        if device_mount_key in seen_devices:
+            continue
+
         try:
-            usage = psutil.disk_usage(part.mountpoint)
-            model = disk_models.get(part.device, "") or disk_models.get(_disk_base_device(part.device), "")
+            usage = psutil.disk_usage(mountpoint)
+
+            # Tiny partitions such as EFI should not occupy disk slots.
+            if usage.total < 2 * 1024**3 and mountpoint != "/":
+                continue
+
+            model = disk_models.get(device, "") or disk_models.get(_disk_base_device(device), "")
+
             disk_parts.append({
-                "mount": part.mountpoint,
-                "device": part.device,
+                "mount": mountpoint,
+                "device": device,
                 "model": model,
                 "total_gb": bytes_to_gb(usage.total),
                 "used_gb": bytes_to_gb(usage.used),
                 "percent": usage.percent,
             })
+            seen_mounts.add(mountpoint)
+            seen_devices.add(device_mount_key)
         except OSError:
             # Mount points can disappear, be permission restricted, or be
             # temporarily unavailable. A single bad mount must not break /api/stats.
             pass
 
+    disk_parts.sort(key=_disk_display_score)
     return disk_parts
 
 

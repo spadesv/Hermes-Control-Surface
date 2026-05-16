@@ -179,7 +179,7 @@ bash scripts/doctor.sh
 Hermes Control Surface is an independent local dashboard.  
 It is not an official Hermes Agent release.
 
-This is an early `v0.1.2` release with dynamic rows, diagnostics, and safer public defaults. Thoughtful fixes, careful polish, and practical ideas are welcome.
+This is an early `v0.1.3` release with dynamic rows, diagnostics, safer public defaults, and a disk-display hotfix. Thoughtful fixes, careful polish, and practical ideas are welcome.
 
 ## License
 

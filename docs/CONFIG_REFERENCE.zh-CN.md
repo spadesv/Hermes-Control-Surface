@@ -77,9 +77,9 @@ dashboard:
 
 ```yaml
 build:
-  version: 0.1.2
-  build_date: "2026-04-27"
-  commit: v0.1.2
+  version: 0.1.3
+  build_date: "2026-05-16"
+  commit: v0.1.3
   channel: stable
 ```
 
